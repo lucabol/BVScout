@@ -5,10 +5,11 @@ class Match {
         this.team1SetWins = 0;
         this.team2SetWins = 0;
         this.currentSet = 0;
+        this.shots = [];
         this.loadState();
     }
 
-    incrementScore(team) {
+    incrementScore(team, method) {
         if (this.currentSet >= 3) return; // Match is over
 
         if (team === 'team1') {
@@ -16,6 +17,8 @@ class Match {
         } else if (team === 'team2') {
             this.team2Scores[this.currentSet]++;
         }
+
+        this.shots.push({ team, method }); // Record the shot
 
         // Check if the set is over
         if (this.isSetOver()) {
@@ -26,13 +29,14 @@ class Match {
         // Check if the match is over
         if (this.isMatchOver()) {
             this.currentSet = 3; // End the match
+            this.displayStatistics(); // Display statistics at the end of the match
         }
 
         this.saveState();
         this.updateUI();
     }
 
-    incrementScoreByTen(team) {
+    incrementScoreByTen(team, method) {
         if (this.currentSet >= 3) return; // Match is over
 
         if (team === 'team1') {
@@ -40,6 +44,8 @@ class Match {
         } else if (team === 'team2') {
             this.team2Scores[this.currentSet] += 10;
         }
+
+        this.shots.push({ team, method }); // Record the shot
 
         // Check if the set is over
         if (this.isSetOver()) {
@@ -170,7 +176,7 @@ class Match {
 
     endPoint(method) {
         if (this.selectedTeam) {
-            this.incrementScore(this.selectedTeam);
+            this.incrementScore(this.selectedTeam, method);
             this.selectedTeam = null;
             document.querySelector('h1').style.display = 'block';
             document.querySelector('.scoreboard').style.display = 'flex';
@@ -180,16 +186,48 @@ class Match {
             document.getElementById('point-endings').style.display = 'none';
         }
     }
+
+    displayStatistics() {
+        const stats = this.shots.reduce((acc, shot) => {
+            if (!acc[shot.team]) acc[shot.team] = {};
+            if (!acc[shot.team][shot.method]) acc[shot.team][shot.method] = 0;
+            acc[shot.team][shot.method]++;
+            return acc;
+        }, {});
+
+        let statsHtml = '<div id="shot-statistics">';
+        statsHtml += '<div class="team-stats"><h3>Home Team</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
+        const homeStats = stats['team1'] || {};
+        const awayStats = stats['team2'] || {};
+        const totalHomeShots = Object.values(homeStats).reduce((a, b) => a + b, 0);
+        const totalAwayShots = Object.values(awayStats).reduce((a, b) => a + b, 0);
+
+        for (const method in homeStats) {
+            const percentage = ((homeStats[method] / totalHomeShots) * 100).toFixed(2);
+            statsHtml += `<tr><td>${method}</td><td>${homeStats[method]}</td><td>${percentage}%</td></tr>`;
+        }
+        statsHtml += '</table></div>';
+
+        statsHtml += '<div class="team-stats"><h3>Away Team</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
+        for (const method in awayStats) {
+            const percentage = ((awayStats[method] / totalAwayShots) * 100).toFixed(2);
+            statsHtml += `<tr><td>${method}</td><td>${awayStats[method]}</td><td>${percentage}%</td></tr>`;
+        }
+        statsHtml += '</table></div>';
+        statsHtml += '</div>';
+
+        document.getElementById('shot-statistics').innerHTML = statsHtml;
+    }
 }
 
 const match = new Match();
 
-function incrementScore(team) {
-    match.incrementScore(team);
+function incrementScore(team, method) {
+    match.incrementScore(team, method);
 }
 
-function incrementScoreByTen(team) {
-    match.incrementScoreByTen(team);
+function incrementScoreByTen(team, method) {
+    match.incrementScoreByTen(team, method);
 }
 
 function resetMatch() {

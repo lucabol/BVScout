@@ -78,6 +78,10 @@ button:hover {
     margin: 5px 0;
 }
 
+#set-results {
+    display: block;
+}
+
 /* Reset display property when 'New Match' button is pressed */
 #reset-button:active ~ .scoreboard {
     display: flex;

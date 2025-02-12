@@ -123,7 +123,7 @@ class Match {
         // Update set results
         let setResults = '';
         for (let i = 0; i < this.currentSet; i++) {
-            setResults += `<span class='set-result'>Set ${i + 1}: ${this.team1Scores[i]}-${this.team2Scores[i]}</span> `;
+            setResults += `<span class='set-result'>${this.team1Scores[i]}-${this.team2Scores[i]}</span> `;
         }
         document.getElementById('set-results').innerHTML = setResults;
 

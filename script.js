@@ -191,6 +191,7 @@ class Match {
     }
 
     displayStatistics() {
+        const shotTypes = ['attack', 'block', 'ace', 'error', 'net', 'fourHits', 'ballHandling', 'footFault'];
         const stats = this.shots.reduce((acc, shot) => {
             if (!acc[shot.team]) acc[shot.team] = {};
             if (!acc[shot.team][shot.method]) acc[shot.team][shot.method] = 0;
@@ -205,17 +206,19 @@ class Match {
         const totalHomeShots = Object.values(homeStats).reduce((a, b) => a + b, 0);
         const totalAwayShots = Object.values(awayStats).reduce((a, b) => a + b, 0);
 
-        for (const method in homeStats) {
-            const percentage = ((homeStats[method] / totalHomeShots) * 100).toFixed(2);
-            statsHtml += `<tr><td>${method}</td><td>${homeStats[method]}</td><td>${percentage}%</td></tr>`;
-        }
+        shotTypes.forEach(method => {
+            const count = homeStats[method] || 0;
+            const percentage = totalHomeShots ? ((count / totalHomeShots) * 100).toFixed(2) : '0.00';
+            statsHtml += `<tr><td>${method}</td><td>${count}</td><td>${percentage}%</td></tr>`;
+        });
         statsHtml += '</table></div>';
 
         statsHtml += '<div class="team-stats"><h3>Away Team</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
-        for (const method in awayStats) {
-            const percentage = ((awayStats[method] / totalAwayShots) * 100).toFixed(2);
-            statsHtml += `<tr><td>${method}</td><td>${awayStats[method]}</td><td>${percentage}%</td></tr>`;
-        }
+        shotTypes.forEach(method => {
+            const count = awayStats[method] || 0;
+            const percentage = totalAwayShots ? ((count / totalAwayShots) * 100).toFixed(2) : '0.00';
+            statsHtml += `<tr><td>${method}</td><td>${count}</td><td>${percentage}%</td></tr>`;
+        });
         statsHtml += '</table></div>';
         statsHtml += '</div>';
 

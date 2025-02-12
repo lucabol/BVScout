@@ -35,7 +35,9 @@
         </div>
         <div class="button-group">
             <button id="reset-button" onclick="resetMatch()">Reset Match</button>
-            <button id="save-button" onclick="saveMatch()" style="display: none;">Save Match</button>
+            <button id="save-button" onclick="saveMatch()">Save Match</button>
+            <input type="file" id="load-file" style="display: none;" onchange="loadMatch(event)" />
+            <button id="load-button" onclick="document.getElementById('load-file').click()">Load Match</button>
         </div>
         <div id="set-results" class="set-result"></div>
         <div id="shot-statistics" class="set-result" style="margin-top: 20px;"></div> <!-- New section for shot statistics -->

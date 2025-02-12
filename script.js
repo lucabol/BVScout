@@ -120,6 +120,24 @@ class Match {
         if (currentSet !== null) this.currentSet = parseInt(currentSet);
     }
 
+    loadMatch(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const matchData = JSON.parse(e.target.result);
+                this.team1Scores = matchData.team1Scores;
+                this.team2Scores = matchData.team2Scores;
+                this.team1SetWins = matchData.team1SetWins;
+                this.team2SetWins = matchData.team2SetWins;
+                this.currentSet = matchData.currentSet;
+                this.shots = matchData.shots;
+                this.updateUI();
+            };
+            reader.readAsText(file);
+        }
+    }
+
     updateUI() {
         // Update current scores
         document.getElementById('team1-score').innerText = this.team1Scores[this.currentSet];
@@ -246,6 +264,10 @@ function resetMatch() {
 
 function saveMatch() {
     match.saveMatch();
+}
+
+function loadMatch(event) {
+    match.loadMatch(event);
 }
 
 function chooseTeam(team) {

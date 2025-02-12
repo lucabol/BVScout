@@ -153,7 +153,8 @@ class Match {
             team2Scores: this.team2Scores,
             team1SetWins: this.team1SetWins,
             team2SetWins: this.team2SetWins,
-            currentSet: this.currentSet
+            currentSet: this.currentSet,
+            shots: this.shots // Include the series of shots
         };
         const blob = new Blob([JSON.stringify(matchData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);

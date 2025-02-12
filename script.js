@@ -153,6 +153,29 @@ class Match {
         a.click();
         URL.revokeObjectURL(url);
     }
+
+    chooseTeam(team) {
+        this.selectedTeam = team;
+        document.querySelector('h1').style.display = 'none';
+        document.querySelector('.scoreboard').style.display = 'none';
+        document.querySelector('.button-group').style.display = 'none';
+        document.getElementById('current-set').style.display = 'none';
+        document.getElementById('reset-button').style.display = 'none';
+        document.getElementById('point-endings').style.display = 'flex';
+    }
+
+    endPoint(method) {
+        if (this.selectedTeam) {
+            this.incrementScore(this.selectedTeam);
+            this.selectedTeam = null;
+            document.querySelector('h1').style.display = 'block';
+            document.querySelector('.scoreboard').style.display = 'flex';
+            document.querySelector('.button-group').style.display = 'flex';
+            document.getElementById('current-set').style.display = 'block';
+            document.getElementById('reset-button').style.display = 'block';
+            document.getElementById('point-endings').style.display = 'none';
+        }
+    }
 }
 
 const match = new Match();
@@ -171,6 +194,14 @@ function resetMatch() {
 
 function saveMatch() {
     match.saveMatch();
+}
+
+function chooseTeam(team) {
+    match.chooseTeam(team);
+}
+
+function endPoint(method) {
+    match.endPoint(method);
 }
 
 window.onload = () => {

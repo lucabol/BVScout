@@ -3,27 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beach Volleyball Score Tracker</title>
+    <title>BV Tracker</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Beach Volleyball Score Tracker</h1>
+        <h1>BV Tracker</h1>
         <div id="match-status"></div>
         <div id="current-set" class="set-scores">0-0</div>
         <div class="scoreboard">
             <div class="team">
                 <h2>Home</h2>
                 <p id="team1-score">0</p>
-                <button onclick="incrementScore('team1')">Add Point</button>
-                <button onclick="incrementScoreByTen('team1')">Add 10 Points</button>
+                <button onclick="chooseTeam('team1')">Home Scored</button>
             </div>
             <div class="team">
                 <h2>Away</h2>
                 <p id="team2-score">0</p>
-                <button onclick="incrementScore('team2')">Add Point</button>
-                <button onclick="incrementScoreByTen('team2')">Add 10 Points</button>
+                <button onclick="chooseTeam('team2')">Away Scored</button>
             </div>
+        </div>
+        <div id="point-endings" class="button-group" style="display: none;">
+            <button onclick="endPoint('attack')">Successful Attack</button>
+            <button onclick="endPoint('block')">Block</button>
+            <button onclick="endPoint('ace')">Service Ace</button>
+            <button onclick="endPoint('error')">Opponent Error</button>
+            <button onclick="endPoint('net')">Net Violation</button>
+            <button onclick="endPoint('fourHits')">Four Hits</button>
+            <button onclick="endPoint('ballHandling')">Ball Handling Error</button>
+            <button onclick="endPoint('footFault')">Foot Fault</button>
         </div>
         <div class="button-group">
             <button id="reset-button" onclick="resetMatch()">Reset Match</button>

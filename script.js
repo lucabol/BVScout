@@ -89,12 +89,14 @@ class Match {
         this.team1SetWins = 0;
         this.team2SetWins = 0;
         this.currentSet = 0;
+        this.shots = [];
         this.saveState();
         this.updateUI();
         document.getElementById('match-status').innerText = ''; // Clear the match status
         document.getElementById('reset-button').innerText = 'Reset Match'; // Reset button text
         document.querySelector('.scoreboard').style.display = 'flex'; // Show scoreboard
         document.querySelector('.scoreboard').style.flexDirection = 'row'; // Ensure horizontal layout
+        document.getElementById('shot-statistics').innerHTML = ''; // Clear the shot statistics
     }
 
     saveState() {

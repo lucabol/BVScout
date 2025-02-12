@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beach Volleyball Score Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Beach Volleyball Score Tracker</h1>
+        <div id="match-status"></div>
+        <div id="current-set" class="set-scores">0-0</div>
+        <div class="scoreboard">
+            <div class="team">
+                <h2>Home</h2>
+                <p id="team1-score">0</p>
+                <button onclick="incrementScore('team1')">Add Point</button>
+                <button onclick="incrementScoreByTen('team1')">Add 10 Points</button>
+            </div>
+            <div class="team">
+                <h2>Away</h2>
+                <p id="team2-score">0</p>
+                <button onclick="incrementScore('team2')">Add Point</button>
+                <button onclick="incrementScoreByTen('team2')">Add 10 Points</button>
+            </div>
+        </div>
+        <div class="button-group">
+            <button id="reset-button" onclick="resetMatch()">Reset Match</button>
+            <button id="save-button" onclick="saveMatch()" style="display: none;">Save Match</button>
+        </div>
+        <div id="set-results" class="set-result"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

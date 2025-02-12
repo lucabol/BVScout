@@ -1,0 +1,91 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.container {
+    margin-top: 50px;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.scoreboard {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-direction: row;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.team {
+    margin: 0 20px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #333333;
+}
+
+#match-status {
+    font-size: 24px;
+    color: #000000;
+    margin: 20px 0;
+    font-weight: bold;
+}
+
+.set-scores {
+    margin: 10px 0;
+    font-size: 32px;
+    color: #000000;
+}
+
+.team p {
+    margin: 5px 0;
+}
+
+#team1-score, #team2-score {
+    font-size: 48px;
+    margin: 10px 0;
+    font-weight: bold;
+    color: #000000;
+}
+
+.set-result {
+    font-size: 18px;
+    color: #000000;
+    margin: 5px 0;
+}
+
+/* Reset display property when 'New Match' button is pressed */
+#reset-button:active ~ .scoreboard {
+    display: flex;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}

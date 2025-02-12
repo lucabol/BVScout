@@ -57,7 +57,7 @@ class Match {
     }
 
     isSetOver() {
-        const setPoint = this.currentSet < 2 ? 21 : 15;
+        const setPoint = 3;
         const team1Score = this.team1Scores[this.currentSet];
         const team2Score = this.team2Scores[this.currentSet];
         return (team1Score >= setPoint || team2Score >= setPoint) && Math.abs(team1Score - team2Score) >= 2;
@@ -134,6 +134,10 @@ class Match {
             document.getElementById('reset-button').innerText = 'New Match'; // Change button text to 'New Match'
             document.querySelector('.scoreboard').style.display = 'none'; // Hide scoreboard
             document.getElementById('save-button').style.display = 'block'; // Show save button
+            document.querySelectorAll('.team').forEach(team => team.style.display = 'none'); // Hide home and away divisions
+        } else {
+            document.querySelector('.scoreboard').style.display = 'flex'; // Show scoreboard
+            document.querySelectorAll('.team').forEach(team => team.style.display = 'block'); // Show home and away divisions
         }
     }
 

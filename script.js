@@ -147,6 +147,8 @@ class Match {
             document.querySelector('.scoreboard').style.display = 'flex'; // Show scoreboard
             document.querySelectorAll('.team').forEach(team => team.style.display = 'block'); // Show home and away divisions
         }
+
+        this.displayStatistics(); // Display statistics during the match
     }
 
     saveMatch() {
@@ -175,6 +177,7 @@ class Match {
         document.getElementById('current-set').style.display = 'none';
         document.getElementById('reset-button').style.display = 'none';
         document.getElementById('point-endings').style.display = 'flex';
+        document.getElementById('shot-statistics').style.display = 'none'; // Hide statistics
     }
 
     endPoint(method) {
@@ -187,6 +190,7 @@ class Match {
             document.getElementById('current-set').style.display = 'block';
             document.getElementById('reset-button').style.display = 'block';
             document.getElementById('point-endings').style.display = 'none';
+            document.getElementById('shot-statistics').style.display = 'flex'; // Show statistics
         }
     }
 

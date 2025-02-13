@@ -8,21 +8,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>BV Tracker</h1>
         <div id="match-status"></div>
         <div id="current-set" class="set-scores">0-0</div>
         <div class="scoreboard">
             <div class="team">
                 <h2>Home</h2>
                 <p id="team1-score">0</p>
-                <button onclick="chooseTeam('home1')">Home1 Scored</button>
-                <button onclick="chooseTeam('home2')">Home2 Scored</button>
+                <button onclick="chooseTeam('home1')">Home1</button>
+                <button onclick="chooseTeam('home2')">Home2</button>
             </div>
             <div class="team">
                 <h2>Away</h2>
                 <p id="team2-score">0</p>
-                <button onclick="chooseTeam('away1')">Away1 Scored</button>
-                <button onclick="chooseTeam('away2')">Away2 Scored</button>
+                <button onclick="chooseTeam('away1')">Away1</button>
+                <button onclick="chooseTeam('away2')">Away2</button>
             </div>
         </div>
         <div id="point-endings" class="button-group" style="display: none;">
@@ -36,10 +35,10 @@
             <button onclick="endPoint('footFault')">Foot Fault</button>
         </div>
         <div class="button-group">
-            <button id="reset-button" onclick="resetMatch()">Reset Match</button>
-            <button id="save-button" onclick="saveMatch()">Save Match</button>
+            <button id="reset-button" onclick="resetMatch()">Reset</button>
+            <button id="save-button" onclick="saveMatch()">Save</button>
             <input type="file" id="load-file" style="display: none;" onchange="loadMatch(event)" />
-            <button id="load-button" onclick="document.getElementById('load-file').click()">Load Match</button>
+            <button id="load-button" onclick="document.getElementById('load-file').click()">Load</button>
         </div>
         <div id="set-results" class="set-result"></div>
         <div id="shot-statistics" class="set-result" style="margin-top: 20px;"></div> <!-- New section for shot statistics -->

@@ -219,21 +219,21 @@ class Match {
     }
 
     chooseTeam(team) {
+        console.log('chooseTeam called with team:', team); // Debug log
         this.selectedTeam = team;
-        document.querySelector('h1').style.display = 'none';
         document.querySelector('.scoreboard').style.display = 'none';
         document.querySelector('.button-group').style.display = 'none';
         document.getElementById('current-set').style.display = 'none';
         document.getElementById('reset-button').style.display = 'none';
         document.getElementById('point-endings').style.display = 'flex';
         document.getElementById('shot-statistics').style.display = 'none'; // Hide statistics
+        document.getElementById('point-endings').scrollIntoView({ behavior: 'smooth' }); // Scroll to point-endings
     }
 
     endPoint(method) {
         if (this.selectedTeam) {
             this.incrementScore(this.selectedTeam, method);
             this.selectedTeam = null;
-            document.querySelector('h1').style.display = 'block';
             document.querySelector('.scoreboard').style.display = 'flex';
             document.querySelector('.button-group').style.display = 'flex';
             document.getElementById('current-set').style.display = 'block';
@@ -331,4 +331,8 @@ function endPoint(method) {
 
 window.onload = () => {
     match.updateUI();
+    document.getElementById('home-one-button').addEventListener('click', () => chooseTeam('home1'));
+    document.getElementById('home-two-button').addEventListener('click', () => chooseTeam('home2'));
+    document.getElementById('away-one-button').addEventListener('click', () => chooseTeam('away1'));
+    document.getElementById('away-two-button').addEventListener('click', () => chooseTeam('away2'));
 };

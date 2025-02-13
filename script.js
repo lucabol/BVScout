@@ -6,19 +6,26 @@ class Match {
         this.team2SetWins = 0;
         this.currentSet = 0;
         this.shots = [];
+        this.playerStats = {
+            home1: {},
+            home2: {},
+            away1: {},
+            away2: {}
+        };
         this.loadState();
     }
 
     incrementScore(team, method) {
         if (this.currentSet >= 3) return; // Match is over
 
-        if (team === 'team1') {
+        if (team === 'home1' || team === 'home2') {
             this.team1Scores[this.currentSet]++;
-        } else if (team === 'team2') {
+        } else if (team === 'away1' || team === 'away2') {
             this.team2Scores[this.currentSet]++;
         }
 
         this.shots.push({ team, method }); // Record the shot
+        this.updatePlayerStats(team, method); // Update player stats
 
         // Check if the set is over
         if (this.isSetOver()) {
@@ -39,13 +46,14 @@ class Match {
     incrementScoreByTen(team, method) {
         if (this.currentSet >= 3) return; // Match is over
 
-        if (team === 'team1') {
+        if (team === 'home1' || team === 'home2') {
             this.team1Scores[this.currentSet] += 10;
-        } else if (team === 'team2') {
+        } else if (team === 'away1' || team === 'away2') {
             this.team2Scores[this.currentSet] += 10;
         }
 
         this.shots.push({ team, method }); // Record the shot
+        this.updatePlayerStats(team, method); // Update player stats
 
         // Check if the set is over
         if (this.isSetOver()) {
@@ -60,6 +68,13 @@ class Match {
 
         this.saveState();
         this.updateUI();
+    }
+
+    updatePlayerStats(player, method) {
+        if (!this.playerStats[player][method]) {
+            this.playerStats[player][method] = 0;
+        }
+        this.playerStats[player][method]++;
     }
 
     isSetOver() {
@@ -90,6 +105,12 @@ class Match {
         this.team2SetWins = 0;
         this.currentSet = 0;
         this.shots = [];
+        this.playerStats = {
+            home1: {},
+            home2: {},
+            away1: {},
+            away2: {}
+        };
         this.saveState();
         this.updateUI();
         document.getElementById('match-status').innerText = ''; // Clear the match status
@@ -105,6 +126,7 @@ class Match {
         localStorage.setItem('team1SetWins', this.team1SetWins);
         localStorage.setItem('team2SetWins', this.team2SetWins);
         localStorage.setItem('currentSet', this.currentSet);
+        localStorage.setItem('playerStats', JSON.stringify(this.playerStats));
     }
 
     loadState() {
@@ -113,11 +135,13 @@ class Match {
         const team1SetWins = localStorage.getItem('team1SetWins');
         const team2SetWins = localStorage.getItem('team2SetWins');
         const currentSet = localStorage.getItem('currentSet');
+        const playerStats = localStorage.getItem('playerStats');
         if (team1Scores !== null) this.team1Scores = JSON.parse(team1Scores);
         if (team2Scores !== null) this.team2Scores = JSON.parse(team2Scores);
         if (team1SetWins !== null) this.team1SetWins = parseInt(team1SetWins);
         if (team2SetWins !== null) this.team2SetWins = parseInt(team2SetWins);
         if (currentSet !== null) this.currentSet = parseInt(currentSet);
+        if (playerStats !== null) this.playerStats = JSON.parse(playerStats);
     }
 
     loadMatch(event) {
@@ -132,6 +156,12 @@ class Match {
                 this.team2SetWins = matchData.team2SetWins;
                 this.currentSet = matchData.currentSet;
                 this.shots = matchData.shots;
+                this.playerStats = matchData.playerStats || {
+                    home1: {},
+                    home2: {},
+                    away1: {},
+                    away2: {}
+                };
                 this.updateUI();
             };
             reader.readAsText(file);
@@ -176,7 +206,8 @@ class Match {
             team1SetWins: this.team1SetWins,
             team2SetWins: this.team2SetWins,
             currentSet: this.currentSet,
-            shots: this.shots // Include the series of shots
+            shots: this.shots, // Include the series of shots
+            playerStats: this.playerStats // Include player stats
         };
         const blob = new Blob([JSON.stringify(matchData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -223,22 +254,42 @@ class Match {
 
         let statsHtml = '<div id="shot-statistics">';
         statsHtml += '<div class="team-stats"><h3>Home Team</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
-        const homeStats = stats['team1'] || {};
-        const awayStats = stats['team2'] || {};
-        const totalHomeShots = Object.values(homeStats).reduce((a, b) => a + b, 0);
-        const totalAwayShots = Object.values(awayStats).reduce((a, b) => a + b, 0);
+        const home1Stats = stats['home1'] || {};
+        const home2Stats = stats['home2'] || {};
+        const away1Stats = stats['away1'] || {};
+        const away2Stats = stats['away2'] || {};
+        const totalHome1Shots = Object.values(home1Stats).reduce((a, b) => a + b, 0);
+        const totalHome2Shots = Object.values(home2Stats).reduce((a, b) => a + b, 0);
+        const totalAway1Shots = Object.values(away1Stats).reduce((a, b) => a + b, 0);
+        const totalAway2Shots = Object.values(away2Stats).reduce((a, b) => a + b, 0);
 
         shotTypes.forEach(method => {
-            const count = homeStats[method] || 0;
-            const percentage = totalHomeShots ? ((count / totalHomeShots) * 100).toFixed(2) : '0.00';
+            const count = home1Stats[method] || 0;
+            const percentage = totalHome1Shots ? ((count / totalHome1Shots) * 100).toFixed(2) : '0.00';
             statsHtml += `<tr><td>${method}</td><td>${count}</td><td>${percentage}%</td></tr>`;
         });
         statsHtml += '</table></div>';
 
-        statsHtml += '<div class="team-stats"><h3>Away Team</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
+        statsHtml += '<div class="team-stats"><h3>Home Team 2</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
         shotTypes.forEach(method => {
-            const count = awayStats[method] || 0;
-            const percentage = totalAwayShots ? ((count / totalAwayShots) * 100).toFixed(2) : '0.00';
+            const count = home2Stats[method] || 0;
+            const percentage = totalHome2Shots ? ((count / totalHome2Shots) * 100).toFixed(2) : '0.00';
+            statsHtml += `<tr><td>${method}</td><td>${count}</td><td>${percentage}%</td></tr>`;
+        });
+        statsHtml += '</table></div>';
+
+        statsHtml += '<div class="team-stats"><h3>Away Team 1</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
+        shotTypes.forEach(method => {
+            const count = away1Stats[method] || 0;
+            const percentage = totalAway1Shots ? ((count / totalAway1Shots) * 100).toFixed(2) : '0.00';
+            statsHtml += `<tr><td>${method}</td><td>${count}</td><td>${percentage}%</td></tr>`;
+        });
+        statsHtml += '</table></div>';
+
+        statsHtml += '<div class="team-stats"><h3>Away Team 2</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
+        shotTypes.forEach(method => {
+            const count = away2Stats[method] || 0;
+            const percentage = totalAway2Shots ? ((count / totalAway2Shots) * 100).toFixed(2) : '0.00';
             statsHtml += `<tr><td>${method}</td><td>${count}</td><td>${percentage}%</td></tr>`;
         });
         statsHtml += '</table></div>';

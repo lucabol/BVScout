@@ -147,3 +147,20 @@ button:hover {
     background-color: #ffffff;
     color: #000000;
 }
+
+/* Additional styles for individual player buttons */
+.team button {
+    margin: 5px 0;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.team button:hover {
+    background-color: #333333;
+}

@@ -253,7 +253,7 @@ class Match {
         }, {});
 
         let statsHtml = '<div id="shot-statistics">';
-        statsHtml += '<div class="team-stats"><h3>Home Team</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
+        statsHtml += '<div class="team-stats"><table><tr><th>Home 1</th><th>Count</th><th>Percentage</th></tr>';
         const home1Stats = stats['home1'] || {};
         const home2Stats = stats['home2'] || {};
         const away1Stats = stats['away1'] || {};
@@ -270,7 +270,7 @@ class Match {
         });
         statsHtml += '</table></div>';
 
-        statsHtml += '<div class="team-stats"><h3>Home Team 2</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
+        statsHtml += '<div class="team-stats"><table><tr><th>Home 2</th><th>Count</th><th>Percentage</th></tr>';
         shotTypes.forEach(method => {
             const count = home2Stats[method] || 0;
             const percentage = totalHome2Shots ? ((count / totalHome2Shots) * 100).toFixed(2) : '0.00';
@@ -278,7 +278,7 @@ class Match {
         });
         statsHtml += '</table></div>';
 
-        statsHtml += '<div class="team-stats"><h3>Away Team 1</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
+        statsHtml += '<div class="team-stats"><table><tr><th>Away 1</th><th>Count</th><th>Percentage</th></tr>';
         shotTypes.forEach(method => {
             const count = away1Stats[method] || 0;
             const percentage = totalAway1Shots ? ((count / totalAway1Shots) * 100).toFixed(2) : '0.00';
@@ -286,7 +286,7 @@ class Match {
         });
         statsHtml += '</table></div>';
 
-        statsHtml += '<div class="team-stats"><h3>Away Team 2</h3><table><tr><th>Shot Type</th><th>Count</th><th>Percentage</th></tr>';
+        statsHtml += '<div class="team-stats"><table><tr><th>Away 2</th><th>Count</th><th>Percentage</th></tr>';
         shotTypes.forEach(method => {
             const count = away2Stats[method] || 0;
             const percentage = totalAway2Shots ? ((count / totalAway2Shots) * 100).toFixed(2) : '0.00';

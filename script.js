@@ -335,4 +335,16 @@ window.onload = () => {
     document.getElementById('home-two-button').addEventListener('click', () => chooseTeam('home2'));
     document.getElementById('away-one-button').addEventListener('click', () => chooseTeam('away1'));
     document.getElementById('away-two-button').addEventListener('click', () => chooseTeam('away2'));
+    document.getElementById('attack-button').addEventListener('click', () => endPoint('attack'));
+    document.getElementById('block-button').addEventListener('click', () => endPoint('block'));
+    document.getElementById('ace-button').addEventListener('click', () => endPoint('ace'));
+    document.getElementById('error-button').addEventListener('click', () => endPoint('error'));
+    document.getElementById('net-button').addEventListener('click', () => endPoint('net'));
+    document.getElementById('fourHits-button').addEventListener('click', () => endPoint('fourHits'));
+    document.getElementById('ballHandling-button').addEventListener('click', () => endPoint('ballHandling'));
+    document.getElementById('footFault-button').addEventListener('click', () => endPoint('footFault'));
+    document.getElementById('reset-button').addEventListener('click', resetMatch);
+    document.getElementById('save-button').addEventListener('click', saveMatch);
+    document.getElementById('load-file').addEventListener('change', loadMatch);
+    document.getElementById('load-button').addEventListener('click', () => document.getElementById('load-file').click());
 };

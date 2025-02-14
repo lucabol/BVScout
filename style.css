@@ -103,7 +103,7 @@ button:hover {
 }
 
 #point-endings {
-    display: flex;
+    display: none;
     flex-wrap: wrap;
     justify-content: center;
     gap: 10px;
@@ -173,4 +173,8 @@ button:hover {
 
 .team button:hover {
     background-color: #333333;
+}
+
+#load-file {
+    display: none;
 }

@@ -294,12 +294,15 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
 }
 
 .player-input input {
-    width: 100%;
+    width: 120px; /* Adjusted width for 10 characters */
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
     font-size: 16px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
 }
 
 .modal-content button {

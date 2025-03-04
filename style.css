@@ -116,6 +116,11 @@ button:hover {
     padding: 10px;
     font-size: 16px;
     box-sizing: border-box;
+    background-color: #1e8c1e; /* Green color for successful actions */
+}
+
+#point-endings button:hover {
+    background-color: #156415; /* Darker green on hover */
 }
 
 /* Styles for error types screen */
@@ -195,6 +200,15 @@ button:hover {
 
 .team button:hover {
     background-color: #333333;
+}
+
+/* Success buttons styling (Home1, Home2, Away1, Away2) */
+#home-one-button, #home-two-button, #away-one-button, #away-two-button {
+    background-color: #1e8c1e; /* Green color for successful actions */
+}
+
+#home-one-button:hover, #home-two-button:hover, #away-one-button:hover, #away-two-button:hover {
+    background-color: #156415; /* Darker green on hover */
 }
 
 /* Error buttons styling */

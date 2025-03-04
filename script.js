@@ -156,8 +156,8 @@ function updateMatchStatus() {
 }
 
 function displayStatistics() {
-    const shotTypes = ['attack', 'block', 'ace', 
-                      'errorServe', 'errorRecept', 'errorAttack', 'errorDouble', 'errorOther'];
+    const shotTypes = ['attack', 'attack2', 'block', 'ace', 
+                      'errorServe', 'errorRecept', 'errorAttack', 'errorDouble', 'errorNetTouch'];
     const stats = state.shots.reduce((acc, shot) => {
         if (!acc[shot.team]) acc[shot.team] = {};
         if (!acc[shot.team][shot.method]) acc[shot.team][shot.method] = 0;
@@ -183,9 +183,20 @@ function displayStatistics() {
                     ${shotTypes.map(method => {
                         const count = teamStats[method] || 0;
                         const percentage = totalShots ? ((count / totalShots) * 100).toFixed(2) : '0.00';
-                        const displayName = method.startsWith('error') ? 
-                            'Error: ' + method.replace('error', '') : 
-                            method.charAt(0).toUpperCase() + method.slice(1);
+                        let displayName = method;
+                        
+                        if (method.startsWith('error')) {
+                            displayName = 'Error: ' + method.replace('error', '');
+                        } else if (method === 'attack') {
+                            displayName = 'Attack';
+                        } else if (method === 'attack2') {
+                            displayName = 'Attack 2nd';
+                        } else if (method === 'ace') {
+                            displayName = 'Ace';
+                        } else {
+                            displayName = method.charAt(0).toUpperCase() + method.slice(1);
+                        }
+                        
                         return `<tr><td>${displayName}</td><td>${count}</td><td>${percentage}%</td></tr>`;
                     }).join('')}
                 </table>
@@ -288,11 +299,14 @@ function endErrorPoint(errorType) {
             scoringTeam = 'home2';
         }
         
+        // Convert "Other" to "NetTouch" in the statistics
+        const statErrorType = errorType === 'Other' ? 'NetTouch' : errorType;
+        
         // Add error to shot history with the team that made the error
-        state.shots.push({ team: errorTeam, method: 'error' + errorType });
+        state.shots.push({ team: errorTeam, method: 'error' + statErrorType });
         
         // Update player stats for the player who made the error
-        updatePlayerStats(errorTeam, 'error' + errorType);
+        updatePlayerStats(errorTeam, 'error' + statErrorType);
         
         // Increment score for the team that gets the point
         if (scoringTeam === 'home1' || scoringTeam === 'home2') {
@@ -362,10 +376,11 @@ window.onload = () => {
     document.getElementById('recept-error-button').addEventListener('click', () => endErrorPoint('Recept'));
     document.getElementById('attack-error-button').addEventListener('click', () => endErrorPoint('Attack'));
     document.getElementById('double-error-button').addEventListener('click', () => endErrorPoint('Double'));
-    document.getElementById('other-error-button').addEventListener('click', () => endErrorPoint('Other'));
+    document.getElementById('other-error-button').addEventListener('click', () => endErrorPoint('NetTouch'));
     
     // Event listeners for point endings
     document.getElementById('attack-button').addEventListener('click', () => endPoint('attack'));
+    document.getElementById('attack2-button').addEventListener('click', () => endPoint('attack2'));
     document.getElementById('block-button').addEventListener('click', () => endPoint('block'));
     document.getElementById('ace-button').addEventListener('click', () => endPoint('ace'));
     
@@ -380,7 +395,7 @@ window.onload = () => {
         'home-one-button', 'home-two-button', 'away-one-button', 'away-two-button',
         'away-err1-button', 'away-err2-button', 'home-err1-button', 'home-err2-button',
         'serve-error-button', 'recept-error-button', 'attack-error-button', 'double-error-button', 'other-error-button',
-        'attack-button', 'block-button', 'ace-button',
+        'attack-button', 'attack2-button', 'block-button', 'ace-button',
         'reset-button', 'save-button', 'load-button', 'load-file'
     ];
     

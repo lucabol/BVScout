@@ -21,6 +21,9 @@ with open(js_file, 'r') as file:
 # Insert CSS into the HTML file
 html_content = html_content.replace('</head>', f'<style>{css_content}</style></head>')
 
+# Remove the external script reference
+html_content = html_content.replace('<script src="script.js"></script>', '')
+
 # Insert JS into the HTML file
 html_content = html_content.replace('</body>', f'<script>{js_content}</script></body>')
 

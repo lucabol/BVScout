@@ -17,6 +17,9 @@ html, body {
     --button-success-hover: #156415;
     --button-error-color: #b30000;
     --button-error-hover: #800000;
+    --utility-button-width: 65px;   /* Slightly increased for better readability */
+    --utility-button-height: 35px;  /* Slightly taller to fit text better */
+    --utility-button-gap: 0px;  /* Removed gap completely */
 }
 
 body {
@@ -126,6 +129,15 @@ button:hover {
     flex-wrap: wrap;
     gap: 10px;
     margin-top: 20px;
+}
+
+/* Add specific styling for the utility buttons container */
+.button-group:last-of-type {
+    gap: var(--utility-button-gap);  /* Smaller gap for utility buttons */
+    display: inline-flex;  /* Changed to inline-flex for better alignment */
+    flex-wrap: nowrap;     /* Prevent wrapping */
+    justify-content: center;
+    width: 100%;
 }
 
 #point-endings {
@@ -308,4 +320,34 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
 .modal-content button {
     margin-top: 20px;
     width: 100%;
+}
+
+/* Utility buttons styling (Reset, Save, Load) */
+.utility-button {
+    width: var(--utility-button-width);
+    height: var(--utility-button-height);
+    padding: 5px 0px;  /* Removed horizontal padding completely */
+    font-size: var(--button-font-size);
+    margin: 0 -1px;  /* Added negative margin to ensure no gaps */
+    position: relative;  /* Added to ensure buttons stack properly */
+    z-index: 1;  /* Base z-index */
+}
+
+/* Adjust hover state to appear on top */
+.utility-button:hover {
+    z-index: 2;
+    position: relative;
+}
+
+/* Specific border radius for connected utility buttons */
+.utility-button:first-child {
+    border-radius: var(--button-radius) 0 0 var(--button-radius);
+}
+
+.utility-button:last-child {
+    border-radius: 0 var(--button-radius) var(--button-radius) 0;
+}
+
+.utility-button:not(:first-child):not(:last-child) {
+    border-radius: 0;
 }

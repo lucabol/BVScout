@@ -109,6 +109,7 @@ function loadState() {
 }
 
 function resetState() {
+    const previousNames = state.playerNames; // Store the current names
     Object.assign(state, {
         team1Scores: [0, 0, 0],
         team2Scores: [0, 0, 0],
@@ -125,12 +126,7 @@ function resetState() {
         selectedTeam: null,
         errorMode: false,
         errorPlayer: null,
-        playerNames: {
-            home1: 'Home1',
-            home2: 'Home2',
-            away1: 'Away1',
-            away2: 'Away2'
-        }
+        playerNames: previousNames // Restore the previous names
     });
 }
 
@@ -202,6 +198,16 @@ function updateMatchStatus() {
         document.querySelector('.scoreboard').style.display = 'none';
         document.getElementById('save-button').style.display = 'block';
         document.querySelectorAll('.team').forEach(team => team.style.display = 'none');
+
+        // Hide second screen elements
+        document.getElementById('point-endings').style.display = 'none';
+        document.getElementById('error-types').style.display = 'none';
+        
+        // Remove the points display container if it exists
+        const pointsContainer = document.getElementById('current-points-container');
+        if (pointsContainer) {
+            pointsContainer.remove();
+        }
     } else {
         document.querySelector('.scoreboard').style.display = 'flex';
         document.querySelectorAll('.team').forEach(team => team.style.display = 'block');
@@ -263,10 +269,7 @@ function displayStatistics() {
 function resetMatch() {
     resetState();
     saveState();
-    showPlayerNamesModal(); // Show the modal when resetting
-    updateUI();
-    document.getElementById('match-status').innerText = '';
-    document.getElementById('reset-button').innerText = 'Reset Match';
+    showPlayerNamesModal(); // Show the modal when resetting match
     
     // Make sure all appropriate elements are visible and others are hidden
     document.querySelector('.scoreboard').style.display = 'flex';
@@ -283,6 +286,10 @@ function resetMatch() {
             group.style.display = 'flex';
         }
     });
+
+    document.getElementById('match-status').innerText = '';
+    document.getElementById('reset-button').innerText = 'Reset Match';
+    updateUI();
 }
 
 function saveMatch() {
@@ -441,7 +448,6 @@ function endErrorPoint(errorType) {
         state.errorPlayer = null;
         
         saveState();
-        updateUI();
         
         // Remove the temporary points display container
         const pointsContainer = document.getElementById('current-points-container');
@@ -449,12 +455,16 @@ function endErrorPoint(errorType) {
             pointsContainer.remove();
         }
         
+        // Properly show/hide all UI elements
         document.querySelector('.scoreboard').style.display = 'flex';
         document.querySelector('.button-group').style.display = 'flex';
         document.getElementById('current-set').style.display = 'block';
         document.getElementById('reset-button').style.display = 'block';
         document.getElementById('error-types').style.display = 'none';
+        document.getElementById('point-endings').style.display = 'none';  // Ensure point-endings is also hidden
         document.getElementById('shot-statistics').style.display = 'flex';
+
+        updateUI();
     }
 }
 
@@ -518,8 +528,9 @@ window.onload = () => {
     // Event listener for player names modal
     document.getElementById('save-names-button').addEventListener('click', savePlayerNames);
     
-    // Show the modal on first load if no state exists
-    if (!localStorage.getItem('playerNames')) {
+    // Show the modal only on very first load when no names exist
+    const savedNames = localStorage.getItem('playerNames');
+    if (!savedNames) {
         showPlayerNamesModal();
     }
 

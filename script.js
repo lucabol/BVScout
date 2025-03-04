@@ -14,7 +14,13 @@ const state = {
     },
     selectedTeam: null,
     errorMode: false,
-    errorPlayer: null
+    errorPlayer: null,
+    playerNames: {
+        home1: 'Home1',
+        home2: 'Home2',
+        away1: 'Away1',
+        away2: 'Away2'
+    }
 };
 
 // Constants
@@ -88,11 +94,11 @@ function saveState() {
 }
 
 function loadState() {
-    const savedState = ['team1Scores', 'team2Scores', 'team1SetWins', 'team2SetWins', 'currentSet', 'playerStats']
+    const savedState = ['team1Scores', 'team2Scores', 'team1SetWins', 'team2SetWins', 'currentSet', 'playerStats', 'playerNames']
         .reduce((acc, key) => {
             const value = localStorage.getItem(key);
             if (value !== null) {
-                acc[key] = key.includes('Scores') || key === 'playerStats' 
+                acc[key] = key.includes('Scores') || key === 'playerStats' || key === 'playerNames'
                     ? JSON.parse(value)
                     : parseInt(value);
             }
@@ -118,8 +124,55 @@ function resetState() {
         },
         selectedTeam: null,
         errorMode: false,
-        errorPlayer: null
+        errorPlayer: null,
+        playerNames: {
+            home1: 'Home1',
+            home2: 'Home2',
+            away1: 'Away1',
+            away2: 'Away2'
+        }
     });
+}
+
+function updateButtonNames() {
+    // Update main buttons
+    document.getElementById('home-one-button').textContent = state.playerNames.home1;
+    document.getElementById('home-two-button').textContent = state.playerNames.home2;
+    document.getElementById('away-one-button').textContent = state.playerNames.away1;
+    document.getElementById('away-two-button').textContent = state.playerNames.away2;
+
+    // Update error buttons
+    document.getElementById('away-err1-button').textContent = state.playerNames.away1 + ' Err';
+    document.getElementById('away-err2-button').textContent = state.playerNames.away2 + ' Err';
+    document.getElementById('home-err1-button').textContent = state.playerNames.home1 + ' Err';
+    document.getElementById('home-err2-button').textContent = state.playerNames.home2 + ' Err';
+}
+
+function showPlayerNamesModal() {
+    const modal = document.getElementById('player-names-modal');
+    modal.style.display = 'flex';
+
+    // Pre-fill inputs with current names
+    document.getElementById('home1-name').value = state.playerNames.home1;
+    document.getElementById('home2-name').value = state.playerNames.home2;
+    document.getElementById('away1-name').value = state.playerNames.away1;
+    document.getElementById('away2-name').value = state.playerNames.away2;
+}
+
+function savePlayerNames() {
+    // Get values from inputs, use defaults if empty
+    state.playerNames.home1 = document.getElementById('home1-name').value.trim() || 'Home1';
+    state.playerNames.home2 = document.getElementById('home2-name').value.trim() || 'Home2';
+    state.playerNames.away1 = document.getElementById('away1-name').value.trim() || 'Away1';
+    state.playerNames.away2 = document.getElementById('away2-name').value.trim() || 'Away2';
+
+    // Hide modal
+    document.getElementById('player-names-modal').style.display = 'none';
+
+    // Update UI with new names
+    updateButtonNames();
+    displayStatistics();
+    saveState();
 }
 
 // UI functions
@@ -166,10 +219,10 @@ function displayStatistics() {
     }, {});
 
     const teams = [
-        { id: 'home1', name: 'Home 1' },
-        { id: 'home2', name: 'Home 2' },
-        { id: 'away1', name: 'Away 1' },
-        { id: 'away2', name: 'Away 2' }
+        { id: 'home1', name: state.playerNames.home1 },
+        { id: 'home2', name: state.playerNames.home2 },
+        { id: 'away1', name: state.playerNames.away1 },
+        { id: 'away2', name: state.playerNames.away2 }
     ];
 
     const statsHtml = teams.map(team => {
@@ -210,6 +263,7 @@ function displayStatistics() {
 function resetMatch() {
     resetState();
     saveState();
+    showPlayerNamesModal(); // Show the modal when resetting
     updateUI();
     document.getElementById('match-status').innerText = '';
     document.getElementById('reset-button').innerText = 'Reset Match';
@@ -249,6 +303,7 @@ function loadMatch(event) {
         reader.onload = (e) => {
             const matchData = JSON.parse(e.target.result);
             Object.assign(state, matchData);
+            updateButtonNames(); // Update button labels with loaded player names
             updateUI();
         };
         reader.readAsText(file);
@@ -426,6 +481,7 @@ function endPoint(method) {
 // Initialize
 window.onload = () => {
     loadState();
+    updateButtonNames();
     updateUI();
     
     // Event listeners for team buttons
@@ -458,6 +514,14 @@ window.onload = () => {
     document.getElementById('save-button').addEventListener('click', saveMatch);
     document.getElementById('load-file').addEventListener('change', loadMatch);
     document.getElementById('load-button').addEventListener('click', () => document.getElementById('load-file').click());
+
+    // Event listener for player names modal
+    document.getElementById('save-names-button').addEventListener('click', savePlayerNames);
+    
+    // Show the modal on first load if no state exists
+    if (!localStorage.getItem('playerNames')) {
+        showPlayerNamesModal();
+    }
 
     // Add error handling for event listeners to detect missing elements
     const allButtons = [

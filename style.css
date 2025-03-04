@@ -253,3 +253,56 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
     text-align: center;
     width: 150px;
 }
+
+/* Player Names Modal Styling */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #f0f0f0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 300px;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #000000;
+}
+
+.player-input {
+    margin: 10px 0;
+    width: 100%;
+}
+
+.player-input label {
+    display: block;
+    margin-bottom: 5px;
+    color: #000000;
+    text-align: left;
+}
+
+.player-input input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.modal-content button {
+    margin-top: 20px;
+    width: 100%;
+}

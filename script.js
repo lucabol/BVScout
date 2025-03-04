@@ -135,6 +135,9 @@ function resetState() {
         errorPlayer: null,
         playerNames: previousNames // Restore the previous names
     });
+    
+    // Ensure reset button text is consistent
+    document.getElementById('reset-button').innerText = 'Reset';
 }
 
 function updateButtonNames() {
@@ -189,7 +192,7 @@ function savePlayerNames() {
     document.getElementById('current-set').style.display = 'block';
     document.getElementById('reset-button').style.display = 'block';
     document.getElementById('match-status').innerText = '';
-    document.getElementById('reset-button').innerText = 'Reset Match';
+    document.getElementById('reset-button').innerText = 'Reset';
     
     updateUI();
 }
@@ -217,7 +220,7 @@ function updateMatchStatus() {
     if (isMatchOver()) {
         const winner = state.team1SetWins > state.team2SetWins ? 'Home' : 'Away';
         document.getElementById('match-status').innerText = `${winner} Wins!`;
-        document.getElementById('reset-button').innerText = 'New Match';
+        document.getElementById('reset-button').innerText = 'Reset';
         document.querySelector('.scoreboard').style.display = 'none';
         document.getElementById('save-button').style.display = 'block';
         document.querySelectorAll('.team').forEach(team => team.style.display = 'none');
@@ -302,8 +305,10 @@ function loadMatch(event) {
         reader.onload = (e) => {
             const matchData = JSON.parse(e.target.result);
             Object.assign(state, matchData);
-            updateButtonNames(); // Update button labels with loaded player names
+            updateButtonNames();
             updateUI();
+            // Ensure reset button text is consistent
+            document.getElementById('reset-button').innerText = 'Reset';
         };
         reader.readAsText(file);
     }
@@ -484,6 +489,9 @@ window.onload = () => {
     loadState();
     updateButtonNames();
     updateUI();
+    
+    // Set reset button text
+    document.getElementById('reset-button').innerText = 'Reset';
     
     // Event listeners for team buttons
     document.getElementById('home-one-button').addEventListener('click', () => chooseTeam('home1'));

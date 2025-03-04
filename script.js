@@ -94,11 +94,18 @@ function saveState() {
 }
 
 function loadState() {
-    const savedState = ['team1Scores', 'team2Scores', 'team1SetWins', 'team2SetWins', 'currentSet', 'playerStats', 'playerNames']
+    // First try to load player names separately
+    const savedNames = localStorage.getItem('playerNames');
+    if (savedNames) {
+        state.playerNames = JSON.parse(savedNames);
+    }
+
+    // Then load the rest of the state
+    const savedState = ['team1Scores', 'team2Scores', 'team1SetWins', 'team2SetWins', 'currentSet', 'playerStats']
         .reduce((acc, key) => {
             const value = localStorage.getItem(key);
             if (value !== null) {
-                acc[key] = key.includes('Scores') || key === 'playerStats' || key === 'playerNames'
+                acc[key] = key.includes('Scores') || key === 'playerStats'
                     ? JSON.parse(value)
                     : parseInt(value);
             }
@@ -109,7 +116,7 @@ function loadState() {
 }
 
 function resetState() {
-    const previousNames = state.playerNames; // Store the current names
+    const previousNames = {...state.playerNames}; // Store the current names
     Object.assign(state, {
         team1Scores: [0, 0, 0],
         team2Scores: [0, 0, 0],
@@ -137,11 +144,11 @@ function updateButtonNames() {
     document.getElementById('away-one-button').textContent = state.playerNames.away1;
     document.getElementById('away-two-button').textContent = state.playerNames.away2;
 
-    // Update error buttons
-    document.getElementById('away-err1-button').textContent = state.playerNames.away1 + ' Err';
-    document.getElementById('away-err2-button').textContent = state.playerNames.away2 + ' Err';
-    document.getElementById('home-err1-button').textContent = state.playerNames.home1 + ' Err';
-    document.getElementById('home-err2-button').textContent = state.playerNames.home2 + ' Err';
+    // Update error buttons (without 'Err' suffix)
+    document.getElementById('away-err1-button').textContent = state.playerNames.away1;
+    document.getElementById('away-err2-button').textContent = state.playerNames.away2;
+    document.getElementById('home-err1-button').textContent = state.playerNames.home1;
+    document.getElementById('home-err2-button').textContent = state.playerNames.home2;
 }
 
 function showPlayerNamesModal() {
@@ -165,10 +172,26 @@ function savePlayerNames() {
     // Hide modal
     document.getElementById('player-names-modal').style.display = 'none';
 
-    // Update UI with new names
+    // Now reset the state (only after names are confirmed)
+    resetState();
+    
+    // Update UI with new names and reset state
     updateButtonNames();
     displayStatistics();
     saveState();
+    
+    // Reset UI elements
+    document.querySelector('.scoreboard').style.display = 'flex';
+    document.querySelector('.scoreboard').style.flexDirection = 'row';
+    document.getElementById('point-endings').style.display = 'none';
+    document.getElementById('error-types').style.display = 'none';
+    document.getElementById('shot-statistics').innerHTML = '';
+    document.getElementById('current-set').style.display = 'block';
+    document.getElementById('reset-button').style.display = 'block';
+    document.getElementById('match-status').innerText = '';
+    document.getElementById('reset-button').innerText = 'Reset Match';
+    
+    updateUI();
 }
 
 // UI functions
@@ -198,16 +221,6 @@ function updateMatchStatus() {
         document.querySelector('.scoreboard').style.display = 'none';
         document.getElementById('save-button').style.display = 'block';
         document.querySelectorAll('.team').forEach(team => team.style.display = 'none');
-
-        // Hide second screen elements
-        document.getElementById('point-endings').style.display = 'none';
-        document.getElementById('error-types').style.display = 'none';
-        
-        // Remove the points display container if it exists
-        const pointsContainer = document.getElementById('current-points-container');
-        if (pointsContainer) {
-            pointsContainer.remove();
-        }
     } else {
         document.querySelector('.scoreboard').style.display = 'flex';
         document.querySelectorAll('.team').forEach(team => team.style.display = 'block');
@@ -267,29 +280,8 @@ function displayStatistics() {
 
 // Action handlers
 function resetMatch() {
-    resetState();
-    saveState();
-    showPlayerNamesModal(); // Show the modal when resetting match
-    
-    // Make sure all appropriate elements are visible and others are hidden
-    document.querySelector('.scoreboard').style.display = 'flex';
-    document.querySelector('.scoreboard').style.flexDirection = 'row';
-    document.getElementById('point-endings').style.display = 'none';
-    document.getElementById('error-types').style.display = 'none';
-    document.getElementById('shot-statistics').innerHTML = '';
-    document.getElementById('current-set').style.display = 'block';
-    document.getElementById('reset-button').style.display = 'block';
-    
-    // Make sure regular buttons are visible
-    document.querySelectorAll('.button-group').forEach(group => {
-        if (group.id !== 'point-endings' && group.id !== 'error-types') {
-            group.style.display = 'flex';
-        }
-    });
-
-    document.getElementById('match-status').innerText = '';
-    document.getElementById('reset-button').innerText = 'Reset Match';
-    updateUI();
+    // Just show the modal, don't reset state yet
+    showPlayerNamesModal();
 }
 
 function saveMatch() {
@@ -448,6 +440,7 @@ function endErrorPoint(errorType) {
         state.errorPlayer = null;
         
         saveState();
+        updateUI();
         
         // Remove the temporary points display container
         const pointsContainer = document.getElementById('current-points-container');
@@ -455,16 +448,12 @@ function endErrorPoint(errorType) {
             pointsContainer.remove();
         }
         
-        // Properly show/hide all UI elements
         document.querySelector('.scoreboard').style.display = 'flex';
         document.querySelector('.button-group').style.display = 'flex';
         document.getElementById('current-set').style.display = 'block';
         document.getElementById('reset-button').style.display = 'block';
         document.getElementById('error-types').style.display = 'none';
-        document.getElementById('point-endings').style.display = 'none';  // Ensure point-endings is also hidden
         document.getElementById('shot-statistics').style.display = 'flex';
-
-        updateUI();
     }
 }
 
@@ -528,9 +517,8 @@ window.onload = () => {
     // Event listener for player names modal
     document.getElementById('save-names-button').addEventListener('click', savePlayerNames);
     
-    // Show the modal only on very first load when no names exist
-    const savedNames = localStorage.getItem('playerNames');
-    if (!savedNames) {
+    // Show the modal on first load if no state exists
+    if (!localStorage.getItem('playerNames')) {
         showPlayerNamesModal();
     }
 

@@ -294,7 +294,7 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
 }
 
 .player-input input {
-    width: 120px; /* Adjusted width for 10 characters */
+    width: 120px; /* Adjusted width to better fit 10 characters */
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;

@@ -3,6 +3,22 @@ html, body {
     padding: 0;
 }
 
+/* CSS Variables for easy global styling */
+:root {
+    --button-width: 120px;
+    --button-height: 40px;
+    --button-font-size: 16px;
+    --button-margin: 5px;
+    --button-padding: 10px;
+    --button-radius: 5px;
+    --button-color-default: #000000;
+    --button-color-hover: #333333;
+    --button-success-color: #1e8c1e;
+    --button-success-hover: #156415;
+    --button-error-color: #b30000;
+    --button-error-hover: #800000;
+}
+
 body {
     margin-top: 0;
     padding-top: 0;
@@ -40,20 +56,29 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Global button styling */
 button {
-    margin-top: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #000000;
+    width: var(--button-width);
+    height: var(--button-height);
+    margin: var(--button-margin);
+    padding: var(--button-padding);
+    font-size: var(--button-font-size);
+    background-color: var(--button-color-default);
     color: #ffffff;
     border: none;
-    border-radius: 5px;
+    border-radius: var(--button-radius);
     cursor: pointer;
     transition: background-color 0.3s ease;
+    text-align: center;
+    /* Ensures text stays centered */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
 }
 
 button:hover {
-    background-color: #333333;
+    background-color: var(--button-color-hover);
 }
 
 #match-status {
@@ -98,6 +123,7 @@ button:hover {
 .button-group {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 10px;
     margin-top: 20px;
 }
@@ -111,16 +137,11 @@ button:hover {
 }
 
 #point-endings button {
-    flex: 1 1 150px;
-    margin: 5px;
-    padding: 10px;
-    font-size: 16px;
-    box-sizing: border-box;
-    background-color: #1e8c1e; /* Green color for successful actions */
+    background-color: var(--button-success-color);
 }
 
 #point-endings button:hover {
-    background-color: #156415; /* Darker green on hover */
+    background-color: var(--button-success-hover);
 }
 
 /* Styles for error types screen */
@@ -133,16 +154,11 @@ button:hover {
 }
 
 #error-types button {
-    flex: 1 1 150px;
-    margin: 5px;
-    padding: 10px;
-    font-size: 16px;
-    box-sizing: border-box;
-    background-color: #b30000;
+    background-color: var(--button-error-color);
 }
 
 #error-types button:hover {
-    background-color: #800000;
+    background-color: var(--button-error-hover);
 }
 
 /* New styles for statistics tables */
@@ -185,39 +201,28 @@ button:hover {
     color: #000000;
 }
 
-/* Additional styles for individual player buttons */
+/* Team buttons styling */
 .team button {
-    margin: 5px 0;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #000000;
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.team button:hover {
-    background-color: #333333;
+    /* Using the global button variables */
+    margin: var(--button-margin) 0;
 }
 
 /* Success buttons styling (Home1, Home2, Away1, Away2) */
 #home-one-button, #home-two-button, #away-one-button, #away-two-button {
-    background-color: #1e8c1e; /* Green color for successful actions */
+    background-color: var(--button-success-color);
 }
 
 #home-one-button:hover, #home-two-button:hover, #away-one-button:hover, #away-two-button:hover {
-    background-color: #156415; /* Darker green on hover */
+    background-color: var(--button-success-hover);
 }
 
 /* Error buttons styling */
 button[id$="err1-button"], button[id$="err2-button"] {
-    background-color: #b30000;
+    background-color: var(--button-error-color);
 }
 
 button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
-    background-color: #800000;
+    background-color: var(--button-error-hover);
 }
 
 #load-file {

@@ -259,11 +259,39 @@ function chooseTeam(team) {
     state.selectedTeam = team;
     document.querySelector('.scoreboard').style.display = 'none';
     document.querySelector('.button-group').style.display = 'none';
-    document.getElementById('current-set').style.display = 'none';
+    document.getElementById('current-set').style.display = 'block'; // Keep set score visible
     document.getElementById('reset-button').style.display = 'none';
     document.getElementById('point-endings').style.display = 'flex';
     document.getElementById('error-types').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
+    
+    // Add points display when in point-endings screen
+    const team1Score = state.team1Scores[state.currentSet];
+    const team2Score = state.team2Scores[state.currentSet];
+    
+    // Create container first (darker outer box)
+    const pointScoreContainer = document.createElement('div');
+    pointScoreContainer.id = 'current-points-container';
+    
+    // Create the points display (lighter inner box)
+    const pointScoreDiv = document.createElement('div');
+    pointScoreDiv.id = 'current-points';
+    pointScoreDiv.className = 'set-scores';
+    pointScoreDiv.textContent = `${team1Score} - ${team2Score}`;
+    
+    // Add the points display to the container
+    pointScoreContainer.appendChild(pointScoreDiv);
+    
+    const existingPointsContainer = document.getElementById('current-points-container');
+    if (!existingPointsContainer) {
+        const pointEndingsDiv = document.getElementById('point-endings');
+        pointEndingsDiv.parentNode.insertBefore(pointScoreContainer, pointEndingsDiv);
+    } else {
+        const existingPointScore = document.getElementById('current-points');
+        if (existingPointScore) {
+            existingPointScore.textContent = `${team1Score} - ${team2Score}`;
+        }
+    }
 }
 
 function chooseErrorType(player) {
@@ -271,11 +299,39 @@ function chooseErrorType(player) {
     state.errorPlayer = player;
     document.querySelector('.scoreboard').style.display = 'none';
     document.querySelector('.button-group').style.display = 'none';
-    document.getElementById('current-set').style.display = 'none';
+    document.getElementById('current-set').style.display = 'block'; // Keep set score visible
     document.getElementById('reset-button').style.display = 'none';
     document.getElementById('point-endings').style.display = 'none';
     document.getElementById('error-types').style.display = 'flex';
     document.getElementById('shot-statistics').style.display = 'none';
+    
+    // Add points display when in error-types screen
+    const team1Score = state.team1Scores[state.currentSet];
+    const team2Score = state.team2Scores[state.currentSet];
+    
+    // Create container first (darker outer box)
+    const pointScoreContainer = document.createElement('div');
+    pointScoreContainer.id = 'current-points-container';
+    
+    // Create the points display (lighter inner box)
+    const pointScoreDiv = document.createElement('div');
+    pointScoreDiv.id = 'current-points';
+    pointScoreDiv.className = 'set-scores';
+    pointScoreDiv.textContent = `${team1Score} - ${team2Score}`;
+    
+    // Add the points display to the container
+    pointScoreContainer.appendChild(pointScoreDiv);
+    
+    const existingPointsContainer = document.getElementById('current-points-container');
+    if (!existingPointsContainer) {
+        const errorTypesDiv = document.getElementById('error-types');
+        errorTypesDiv.parentNode.insertBefore(pointScoreContainer, errorTypesDiv);
+    } else {
+        const existingPointScore = document.getElementById('current-points');
+        if (existingPointScore) {
+            existingPointScore.textContent = `${team1Score} - ${team2Score}`;
+        }
+    }
 }
 
 function endErrorPoint(errorType) {
@@ -332,6 +388,12 @@ function endErrorPoint(errorType) {
         saveState();
         updateUI();
         
+        // Remove the temporary points display container
+        const pointsContainer = document.getElementById('current-points-container');
+        if (pointsContainer) {
+            pointsContainer.remove();
+        }
+        
         document.querySelector('.scoreboard').style.display = 'flex';
         document.querySelector('.button-group').style.display = 'flex';
         document.getElementById('current-set').style.display = 'block';
@@ -345,6 +407,13 @@ function endPoint(method) {
     if (state.selectedTeam) {
         incrementScore(state.selectedTeam, method);
         state.selectedTeam = null;
+        
+        // Remove the temporary points display container
+        const pointsContainer = document.getElementById('current-points-container');
+        if (pointsContainer) {
+            pointsContainer.remove();
+        }
+        
         document.querySelector('.scoreboard').style.display = 'flex';
         document.querySelector('.button-group').style.display = 'flex';
         document.getElementById('current-set').style.display = 'block';

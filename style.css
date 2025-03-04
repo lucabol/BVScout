@@ -228,3 +228,28 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
 #load-file {
     display: none;
 }
+
+/* Styling for the current points display in the second screen */
+#current-points-container {
+    margin: 10px 0;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+#current-points {
+    margin: 5px auto;
+    font-size: 32px;
+    color: #000000;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 150px;
+}

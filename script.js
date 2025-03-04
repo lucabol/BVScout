@@ -12,7 +12,9 @@ const state = {
         away1: {},
         away2: {}
     },
-    selectedTeam: null
+    selectedTeam: null,
+    errorMode: false,
+    errorPlayer: null
 };
 
 // Constants
@@ -114,7 +116,9 @@ function resetState() {
             away1: {},
             away2: {}
         },
-        selectedTeam: null
+        selectedTeam: null,
+        errorMode: false,
+        errorPlayer: null
     });
 }
 
@@ -152,7 +156,8 @@ function updateMatchStatus() {
 }
 
 function displayStatistics() {
-    const shotTypes = ['attack', 'block', 'ace', 'error', 'net', 'fourHits', 'ballHandling', 'footFault'];
+    const shotTypes = ['attack', 'block', 'ace', 
+                      'errorServe', 'errorRecept', 'errorAttack', 'errorDouble', 'errorOther'];
     const stats = state.shots.reduce((acc, shot) => {
         if (!acc[shot.team]) acc[shot.team] = {};
         if (!acc[shot.team][shot.method]) acc[shot.team][shot.method] = 0;
@@ -178,7 +183,10 @@ function displayStatistics() {
                     ${shotTypes.map(method => {
                         const count = teamStats[method] || 0;
                         const percentage = totalShots ? ((count / totalShots) * 100).toFixed(2) : '0.00';
-                        return `<tr><td>${method}</td><td>${count}</td><td>${percentage}%</td></tr>`;
+                        const displayName = method.startsWith('error') ? 
+                            'Error: ' + method.replace('error', '') : 
+                            method.charAt(0).toUpperCase() + method.slice(1);
+                        return `<tr><td>${displayName}</td><td>${count}</td><td>${percentage}%</td></tr>`;
                     }).join('')}
                 </table>
             </div>`;
@@ -194,9 +202,22 @@ function resetMatch() {
     updateUI();
     document.getElementById('match-status').innerText = '';
     document.getElementById('reset-button').innerText = 'Reset Match';
+    
+    // Make sure all appropriate elements are visible and others are hidden
     document.querySelector('.scoreboard').style.display = 'flex';
     document.querySelector('.scoreboard').style.flexDirection = 'row';
+    document.getElementById('point-endings').style.display = 'none';
+    document.getElementById('error-types').style.display = 'none';
     document.getElementById('shot-statistics').innerHTML = '';
+    document.getElementById('current-set').style.display = 'block';
+    document.getElementById('reset-button').style.display = 'block';
+    
+    // Make sure regular buttons are visible
+    document.querySelectorAll('.button-group').forEach(group => {
+        if (group.id !== 'point-endings' && group.id !== 'error-types') {
+            group.style.display = 'flex';
+        }
+    });
 }
 
 function saveMatch() {
@@ -230,7 +251,80 @@ function chooseTeam(team) {
     document.getElementById('current-set').style.display = 'none';
     document.getElementById('reset-button').style.display = 'none';
     document.getElementById('point-endings').style.display = 'flex';
+    document.getElementById('error-types').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
+}
+
+function chooseErrorType(player) {
+    state.errorMode = true;
+    state.errorPlayer = player;
+    document.querySelector('.scoreboard').style.display = 'none';
+    document.querySelector('.button-group').style.display = 'none';
+    document.getElementById('current-set').style.display = 'none';
+    document.getElementById('reset-button').style.display = 'none';
+    document.getElementById('point-endings').style.display = 'none';
+    document.getElementById('error-types').style.display = 'flex';
+    document.getElementById('shot-statistics').style.display = 'none';
+}
+
+function endErrorPoint(errorType) {
+    if (state.errorPlayer) {
+        // Determine which team made the error and attribute the error statistic to them
+        let errorTeam;
+        let scoringTeam;
+        
+        // Map error button IDs to actual player IDs for statistics
+        if (state.errorPlayer === 'home-err1') {
+            errorTeam = 'home1';
+            scoringTeam = 'away1';
+        } else if (state.errorPlayer === 'home-err2') {
+            errorTeam = 'home2';
+            scoringTeam = 'away2';
+        } else if (state.errorPlayer === 'away-err1') {
+            errorTeam = 'away1';
+            scoringTeam = 'home1';
+        } else if (state.errorPlayer === 'away-err2') {
+            errorTeam = 'away2';
+            scoringTeam = 'home2';
+        }
+        
+        // Add error to shot history with the team that made the error
+        state.shots.push({ team: errorTeam, method: 'error' + errorType });
+        
+        // Update player stats for the player who made the error
+        updatePlayerStats(errorTeam, 'error' + errorType);
+        
+        // Increment score for the team that gets the point
+        if (scoringTeam === 'home1' || scoringTeam === 'home2') {
+            state.team1Scores[state.currentSet]++;
+        } else if (scoringTeam === 'away1' || scoringTeam === 'away2') {
+            state.team2Scores[state.currentSet]++;
+        }
+
+        // Check if set/match is over
+        if (isSetOver()) {
+            updateSetWins();
+            state.currentSet++;
+        }
+
+        if (isMatchOver()) {
+            state.currentSet = GAME_CONSTANTS.TOTAL_SETS;
+        }
+        
+        // Reset state and update UI
+        state.errorMode = false;
+        state.errorPlayer = null;
+        
+        saveState();
+        updateUI();
+        
+        document.querySelector('.scoreboard').style.display = 'flex';
+        document.querySelector('.button-group').style.display = 'flex';
+        document.getElementById('current-set').style.display = 'block';
+        document.getElementById('reset-button').style.display = 'block';
+        document.getElementById('error-types').style.display = 'none';
+        document.getElementById('shot-statistics').style.display = 'flex';
+    }
 }
 
 function endPoint(method) {
@@ -251,21 +345,58 @@ window.onload = () => {
     loadState();
     updateUI();
     
-    // Event listeners
+    // Event listeners for team buttons
     document.getElementById('home-one-button').addEventListener('click', () => chooseTeam('home1'));
     document.getElementById('home-two-button').addEventListener('click', () => chooseTeam('home2'));
     document.getElementById('away-one-button').addEventListener('click', () => chooseTeam('away1'));
     document.getElementById('away-two-button').addEventListener('click', () => chooseTeam('away2'));
+    
+    // Event listeners for error buttons
+    document.getElementById('away-err1-button').addEventListener('click', () => chooseErrorType('away-err1'));
+    document.getElementById('away-err2-button').addEventListener('click', () => chooseErrorType('away-err2'));
+    document.getElementById('home-err1-button').addEventListener('click', () => chooseErrorType('home-err1'));
+    document.getElementById('home-err2-button').addEventListener('click', () => chooseErrorType('home-err2'));
+    
+    // Event listeners for error types
+    document.getElementById('serve-error-button').addEventListener('click', () => endErrorPoint('Serve'));
+    document.getElementById('recept-error-button').addEventListener('click', () => endErrorPoint('Recept'));
+    document.getElementById('attack-error-button').addEventListener('click', () => endErrorPoint('Attack'));
+    document.getElementById('double-error-button').addEventListener('click', () => endErrorPoint('Double'));
+    document.getElementById('other-error-button').addEventListener('click', () => endErrorPoint('Other'));
+    
+    // Event listeners for point endings
     document.getElementById('attack-button').addEventListener('click', () => endPoint('attack'));
     document.getElementById('block-button').addEventListener('click', () => endPoint('block'));
     document.getElementById('ace-button').addEventListener('click', () => endPoint('ace'));
-    document.getElementById('error-button').addEventListener('click', () => endPoint('error'));
-    document.getElementById('net-button').addEventListener('click', () => endPoint('net'));
-    document.getElementById('fourHits-button').addEventListener('click', () => endPoint('fourHits'));
-    document.getElementById('ballHandling-button').addEventListener('click', () => endPoint('ballHandling'));
-    document.getElementById('footFault-button').addEventListener('click', () => endPoint('footFault'));
+    
+    // Other event listeners
     document.getElementById('reset-button').addEventListener('click', resetMatch);
     document.getElementById('save-button').addEventListener('click', saveMatch);
     document.getElementById('load-file').addEventListener('change', loadMatch);
     document.getElementById('load-button').addEventListener('click', () => document.getElementById('load-file').click());
+
+    // Add error handling for event listeners to detect missing elements
+    const allButtons = [
+        'home-one-button', 'home-two-button', 'away-one-button', 'away-two-button',
+        'away-err1-button', 'away-err2-button', 'home-err1-button', 'home-err2-button',
+        'serve-error-button', 'recept-error-button', 'attack-error-button', 'double-error-button', 'other-error-button',
+        'attack-button', 'block-button', 'ace-button',
+        'reset-button', 'save-button', 'load-button', 'load-file'
+    ];
+    
+    // Check if any buttons are missing
+    allButtons.forEach(id => {
+        const element = document.getElementById(id);
+        if (!element) {
+            console.error(`Button with ID '${id}' not found in the document.`);
+        }
+    });
+
+    // Make sure all elements are visible when needed
+    document.querySelector('.scoreboard').style.display = 'flex';
+    document.querySelector('.button-group').style.display = 'flex';
+    document.getElementById('current-set').style.display = 'block';
+    document.getElementById('reset-button').style.display = 'block';
+    document.getElementById('point-endings').style.display = 'none';
+    document.getElementById('error-types').style.display = 'none';
 };

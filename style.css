@@ -118,6 +118,28 @@ button:hover {
     box-sizing: border-box;
 }
 
+/* Styles for error types screen */
+#error-types {
+    display: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#error-types button {
+    flex: 1 1 150px;
+    margin: 5px;
+    padding: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    background-color: #b30000;
+}
+
+#error-types button:hover {
+    background-color: #800000;
+}
+
 /* New styles for statistics tables */
 #shot-statistics {
     display: flex;
@@ -173,6 +195,15 @@ button:hover {
 
 .team button:hover {
     background-color: #333333;
+}
+
+/* Error buttons styling */
+button[id$="err1-button"], button[id$="err2-button"] {
+    background-color: #b30000;
+}
+
+button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
+    background-color: #800000;
 }
 
 #load-file {

@@ -448,11 +448,13 @@ function endErrorPoint(errorType) {
             pointsContainer.remove();
         }
         
+        // Show/hide the appropriate elements
         document.querySelector('.scoreboard').style.display = 'flex';
         document.querySelector('.button-group').style.display = 'flex';
         document.getElementById('current-set').style.display = 'block';
         document.getElementById('reset-button').style.display = 'block';
         document.getElementById('error-types').style.display = 'none';
+        document.getElementById('point-endings').style.display = 'none'; // Make sure point endings screen stays hidden
         document.getElementById('shot-statistics').style.display = 'flex';
     }
 }

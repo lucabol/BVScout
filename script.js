@@ -679,8 +679,21 @@ function endPoint(method) {
     }
 }
 
+// Add title to the app
+const addTitle = () => {
+    const title = document.createElement('h1');
+    title.innerHTML = '<span style="color: #4CAF50;">Sand</span><span style="color: #F44336;">Score</span>';
+    title.style.fontSize = '24px';
+    title.style.margin = '10px 0';
+    title.style.textAlign = 'center';
+    title.style.fontFamily = 'Arial, sans-serif'; // Change font family
+    title.style.fontWeight = 'bold'; // Make the title bold
+    document.body.insertBefore(title, document.body.firstChild);
+};
+
 // Initialize
 window.onload = () => {
+    addTitle();
     loadState();
     updateButtonNames();
     updateUI();

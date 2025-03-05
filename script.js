@@ -695,7 +695,7 @@ const addTitleAndInfo = () => {
     title.style.fontWeight = 'bold'; // Make the title bold
 
     const infoIcon = document.createElement('span');
-    infoIcon.innerHTML = '🛈'; // Unicode for Information Source
+    infoIcon.innerHTML = '&#9432;'; // Unicode for Information Source
     infoIcon.style.cursor = 'pointer';
     infoIcon.style.fontSize = '18px';
     infoIcon.style.marginLeft = '10px';

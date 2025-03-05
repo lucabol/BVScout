@@ -259,6 +259,7 @@ button:hover {
     padding: 2px 1px; /* Reduced from 4px 2px */
     border: 1px solid #000000;
     text-align: center;
+    vertical-align: middle;
 }
 
 .stats-table th {
@@ -279,6 +280,14 @@ button:hover {
 .stats-table .total-row {
     background-color: #e0e0e0;
     font-weight: bold;
+}
+
+/* Percentage display in statistics table */
+.stat-percent {
+    display: block;
+    font-size: 9px; /* Make it smaller than the main value */
+    color: #666666; /* Slightly muted color */
+    margin-top: -2px; /* Bring it closer to the number */
 }
 
 /* Team buttons styling */

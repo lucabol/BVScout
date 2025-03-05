@@ -340,6 +340,25 @@ function displayStatistics() {
     // Get 4-letter abbreviations of player names
     const abbrevName = name => name.substring(0, 4);
     
+    // Calculate column totals for percentages
+    const getTotal = player => shotTypes.reduce((total, method) => {
+        return total + (stats[player] ? stats[player][method] || 0 : 0);
+    }, 0);
+    
+    const homeTotalPoints = getTotal('home1') + getTotal('home2');
+    const awayTotalPoints = getTotal('away1') + getTotal('away2');
+    const home1Total = getTotal('home1');
+    const home2Total = getTotal('home2');
+    const away1Total = getTotal('away1');
+    const away2Total = getTotal('away2');
+    
+    // Helper function to format cell with percentage
+    const formatCell = (value, columnTotal) => {
+        if (value === 0 || columnTotal === 0) return '0';
+        const percentage = Math.round((value / columnTotal) * 100);
+        return `${value}<span class="stat-percent">${percentage}%</span>`;
+    };
+    
     // Generate the HTML table with abbreviated headers
     let statsHtml = `
         <table class="stats-table">
@@ -371,35 +390,36 @@ function displayStatistics() {
             displayName = method.substring(0, 4);
         }
         
+        // Get values for current method
+        const homeValue = homeStats[method] || 0;
+        const awayValue = awayStats[method] || 0;
+        const home1Value = stats['home1'] ? stats['home1'][method] || 0 : 0;
+        const home2Value = stats['home2'] ? stats['home2'][method] || 0 : 0;
+        const away1Value = stats['away1'] ? stats['away1'][method] || 0 : 0;
+        const away2Value = stats['away2'] ? stats['away2'][method] || 0 : 0;
+        
         statsHtml += `
             <tr>
                 <td>${displayName}</td>
-                <td>${homeStats[method] || 0}</td>
-                <td>${awayStats[method] || 0}</td>
-                <td>${stats['home1'] ? stats['home1'][method] || 0 : 0}</td>
-                <td>${stats['home2'] ? stats['home2'][method] || 0 : 0}</td>
-                <td>${stats['away1'] ? stats['away1'][method] || 0 : 0}</td>
-                <td>${stats['away2'] ? stats['away2'][method] || 0 : 0}</td>
+                <td>${formatCell(homeValue, homeTotalPoints)}</td>
+                <td>${formatCell(awayValue, awayTotalPoints)}</td>
+                <td>${formatCell(home1Value, home1Total)}</td>
+                <td>${formatCell(home2Value, home2Total)}</td>
+                <td>${formatCell(away1Value, away1Total)}</td>
+                <td>${formatCell(away2Value, away2Total)}</td>
             </tr>`;
     });
     
     // Add row for totals
-    const getTotal = player => shotTypes.reduce((total, method) => {
-        return total + (stats[player] ? stats[player][method] || 0 : 0);
-    }, 0);
-    
-    const homeTotalPoints = getTotal('home1') + getTotal('home2');
-    const awayTotalPoints = getTotal('away1') + getTotal('away2');
-    
     statsHtml += `
         <tr class="total-row">
             <td><strong>Tot</strong></td>
             <td><strong>${homeTotalPoints}</strong></td>
             <td><strong>${awayTotalPoints}</strong></td>
-            <td><strong>${getTotal('home1')}</strong></td>
-            <td><strong>${getTotal('home2')}</strong></td>
-            <td><strong>${getTotal('away1')}</strong></td>
-            <td><strong>${getTotal('away2')}</strong></td>
+            <td><strong>${home1Total}</strong></td>
+            <td><strong>${home2Total}</strong></td>
+            <td><strong>${away1Total}</strong></td>
+            <td><strong>${away2Total}</strong></td>
         </tr>
     </table>`;
     

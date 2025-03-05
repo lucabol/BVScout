@@ -1,10 +1,12 @@
 import os
+import shutil
 
 # Define file paths
 html_file = 'index.html'
 css_file = 'style.css'
 js_file = 'script.js'
 output_file = 'BVScouter.html'
+public_folder = r'P:\Public Folder'  # Path to the public folder
 
 # Read the contents of the HTML file
 with open(html_file, 'r') as file:
@@ -32,3 +34,11 @@ with open(output_file, 'w') as file:
     file.write(html_content)
 
 print(f'Merged file created: {output_file}')
+
+# Copy the merged file to the public folder
+try:
+    public_file = os.path.join(public_folder, os.path.basename(output_file))
+    shutil.copy2(output_file, public_file)
+    print(f'File successfully copied to: {public_file}')
+except Exception as e:
+    print(f'Error copying file to public folder: {e}')

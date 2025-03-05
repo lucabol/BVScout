@@ -679,21 +679,64 @@ function endPoint(method) {
     }
 }
 
-// Add title to the app
-const addTitle = () => {
+// Add title and info icon to the app
+const addTitleAndInfo = () => {
+    const titleContainer = document.createElement('div');
+    titleContainer.style.display = 'flex';
+    titleContainer.style.justifyContent = 'center';
+    titleContainer.style.alignItems = 'center';
+    titleContainer.style.position = 'relative';
+
     const title = document.createElement('h1');
     title.innerHTML = '<span style="color: #4CAF50;">Sand</span><span style="color: #F44336;">Score</span>';
     title.style.fontSize = '24px';
     title.style.margin = '10px 0';
-    title.style.textAlign = 'center';
     title.style.fontFamily = 'Arial, sans-serif'; // Change font family
     title.style.fontWeight = 'bold'; // Make the title bold
-    document.body.insertBefore(title, document.body.firstChild);
+
+    const infoIcon = document.createElement('span');
+    infoIcon.innerHTML = '🛈'; // Unicode for Information Source
+    infoIcon.style.cursor = 'pointer';
+    infoIcon.style.fontSize = '18px';
+    infoIcon.style.marginLeft = '10px';
+    infoIcon.style.borderRadius = '50%';
+    infoIcon.style.padding = '2px 6px';
+    infoIcon.style.backgroundColor = 'transparent';
+    infoIcon.style.position = 'absolute';
+    infoIcon.style.right = '10px';
+
+    const infoPane = document.createElement('div');
+    infoPane.style.display = 'none';
+    infoPane.style.position = 'absolute';
+    infoPane.style.top = '40px';
+    infoPane.style.right = '10px';
+    infoPane.style.padding = '15px';
+    infoPane.style.border = '1px solid #ccc';
+    infoPane.style.backgroundColor = '#fff';
+    infoPane.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
+    infoPane.style.borderRadius = '8px';
+    infoPane.style.width = '200px';
+
+    const infoContent = `
+        <h2 style="margin-top: 0;">SandScore</h2>
+        <p style="margin: 5px 0;">Version: Alpha 0.1</p>
+        <p style="margin: 5px 0;">Creator: lucabol</p>
+    `;
+    infoPane.innerHTML = infoContent;
+
+    infoIcon.addEventListener('click', () => {
+        infoPane.style.display = infoPane.style.display === 'none' ? 'block' : 'none';
+    });
+
+    titleContainer.appendChild(title);
+    titleContainer.appendChild(infoIcon);
+    document.body.insertBefore(titleContainer, document.body.firstChild);
+    document.body.appendChild(infoPane);
 };
 
 // Initialize
 window.onload = () => {
-    addTitle();
+    addTitleAndInfo();
     loadState();
     updateButtonNames();
     updateUI();

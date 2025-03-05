@@ -444,3 +444,27 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
     font-size: calc(var(--button-font-size) * 0.85); /* Slightly smaller font */
     padding: 2px 0;
 }
+
+/* Game Format Selection Styling */
+.game-format {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+
+.format-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.format-option input[type="radio"] {
+    margin-right: 5px;
+}
+
+.format-option label {
+    font-weight: bold;
+    cursor: pointer;
+}

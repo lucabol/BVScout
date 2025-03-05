@@ -20,27 +20,40 @@ const state = {
         home2: 'Home2',
         away1: 'Away1',
         away2: 'Away2'
-    }
+    },
+    gameFormat: '3-3-3' // Default game format
 };
 
-// Constants
-const GAME_CONSTANTS = {
-    SETS_TO_WIN: 2,
-    POINTS_TO_WIN_SET: 3,
-    MIN_POINT_DIFFERENCE: 2,
-    TOTAL_SETS: 3
+// Constants for different game formats
+const FORMATS = {
+    '21-21-15': {
+        SETS_TO_WIN: 2,
+        POINTS_TO_WIN_SET: [21, 21, 15],
+        MIN_POINT_DIFFERENCE: 2,
+        TOTAL_SETS: 3
+    },
+    '3-3-3': {
+        SETS_TO_WIN: 2,
+        POINTS_TO_WIN_SET: [3, 3, 3],
+        MIN_POINT_DIFFERENCE: 2,
+        TOTAL_SETS: 3
+    }
 };
 
 // Game logic functions
 function isSetOver() {
     const team1Score = state.team1Scores[state.currentSet];
     const team2Score = state.team2Scores[state.currentSet];
-    return (team1Score >= GAME_CONSTANTS.POINTS_TO_WIN_SET || team2Score >= GAME_CONSTANTS.POINTS_TO_WIN_SET) && 
-           Math.abs(team1Score - team2Score) >= GAME_CONSTANTS.MIN_POINT_DIFFERENCE;
+    const pointsToWin = FORMATS[state.gameFormat].POINTS_TO_WIN_SET[state.currentSet];
+    const minDifference = FORMATS[state.gameFormat].MIN_POINT_DIFFERENCE;
+    
+    return (team1Score >= pointsToWin || team2Score >= pointsToWin) && 
+           Math.abs(team1Score - team2Score) >= minDifference;
 }
 
 function isMatchOver() {
-    return state.team1SetWins === GAME_CONSTANTS.SETS_TO_WIN || state.team2SetWins === GAME_CONSTANTS.SETS_TO_WIN;
+    const setsToWin = FORMATS[state.gameFormat].SETS_TO_WIN;
+    return state.team1SetWins === setsToWin || state.team2SetWins === setsToWin;
 }
 
 function updateSetWins() {
@@ -62,7 +75,7 @@ function updatePlayerStats(player, method) {
 
 // Score management
 function incrementScore(team, method) {
-    if (state.currentSet >= GAME_CONSTANTS.TOTAL_SETS) return;
+    if (state.currentSet >= FORMATS[state.gameFormat].TOTAL_SETS) return;
 
     if (team === 'home1' || team === 'home2') {
         state.team1Scores[state.currentSet]++;
@@ -79,7 +92,7 @@ function incrementScore(team, method) {
     }
 
     if (isMatchOver()) {
-        state.currentSet = GAME_CONSTANTS.TOTAL_SETS;
+        state.currentSet = FORMATS[state.gameFormat].TOTAL_SETS;
     }
 
     saveState();
@@ -94,10 +107,16 @@ function saveState() {
 }
 
 function loadState() {
-    // First try to load player names separately
+    // First try to load player names and game format
     const savedNames = localStorage.getItem('playerNames');
     if (savedNames) {
         state.playerNames = JSON.parse(savedNames);
+    }
+    
+    // Load game format preference
+    const savedGameFormat = localStorage.getItem('gameFormat');
+    if (savedGameFormat && (savedGameFormat === '21-21-15' || savedGameFormat === '3-3-3')) {
+        state.gameFormat = savedGameFormat;
     }
 
     // Then load the rest of the state
@@ -117,6 +136,8 @@ function loadState() {
 
 function resetState() {
     const previousNames = {...state.playerNames}; // Store the current names
+    const currentFormat = state.gameFormat; // Store the current game format
+    
     Object.assign(state, {
         team1Scores: [0, 0, 0],
         team2Scores: [0, 0, 0],
@@ -133,7 +154,8 @@ function resetState() {
         selectedTeam: null,
         errorMode: false,
         errorPlayer: null,
-        playerNames: previousNames // Restore the previous names
+        playerNames: previousNames, // Restore the previous names
+        gameFormat: currentFormat   // Keep the selected game format
     });
     
     // Ensure reset button text is consistent
@@ -163,6 +185,13 @@ function showPlayerNamesModal() {
     document.getElementById('home2-name').value = state.playerNames.home2;
     document.getElementById('away1-name').value = state.playerNames.away1;
     document.getElementById('away2-name').value = state.playerNames.away2;
+    
+    // Set the correct radio button for game format
+    if (state.gameFormat === '21-21-15') {
+        document.getElementById('format-21').checked = true;
+    } else {
+        document.getElementById('format-3').checked = true;
+    }
 }
 
 function savePlayerNames() {
@@ -171,6 +200,10 @@ function savePlayerNames() {
     state.playerNames.home2 = document.getElementById('home2-name').value.trim() || 'Home2';
     state.playerNames.away1 = document.getElementById('away1-name').value.trim() || 'Away1';
     state.playerNames.away2 = document.getElementById('away2-name').value.trim() || 'Away2';
+    
+    // Get selected game format
+    const format21Selected = document.getElementById('format-21').checked;
+    state.gameFormat = format21Selected ? '21-21-15' : '3-3-3';
 
     // Hide modal
     document.getElementById('player-names-modal').style.display = 'none';
@@ -480,7 +513,7 @@ function endErrorPoint(errorType) {
         }
 
         if (isMatchOver()) {
-            state.currentSet = GAME_CONSTANTS.TOTAL_SETS;
+            state.currentSet = FORMATS[state.gameFormat].TOTAL_SETS;
         }
         
         // Reset state and update UI

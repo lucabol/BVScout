@@ -105,8 +105,9 @@ function incrementScore(team, method) {
 
 // State management
 function saveState() {
-    Object.entries(state).forEach(([key, value]) => {
-        localStorage.setItem(key, typeof value === 'object' ? JSON.stringify(value) : value);
+    Object.keys(state).forEach(key => {
+        // Save history array as well, just stringify it
+        localStorage.setItem(key, typeof state[key] === 'object' ? JSON.stringify(state[key]) : state[key]);
     });
 }
 
@@ -123,19 +124,34 @@ function loadState() {
         state.gameFormat = savedGameFormat;
     }
 
+    // Load history if it exists
+    const savedHistory = localStorage.getItem('history');
+    if (savedHistory) {
+        state.history = JSON.parse(savedHistory);
+    }
+
     // Then load the rest of the state
-    const savedState = ['team1Scores', 'team2Scores', 'team1SetWins', 'team2SetWins', 'currentSet', 'playerStats']
-        .reduce((acc, key) => {
+    ['team1Scores', 'team2Scores', 'team1SetWins', 'team2SetWins', 'currentSet', 'playerStats', 'shots']
+        .forEach(key => {
             const value = localStorage.getItem(key);
             if (value !== null) {
-                acc[key] = key.includes('Scores') || key === 'playerStats'
+                state[key] = ['team1Scores', 'team2Scores', 'playerStats', 'shots'].includes(key)
                     ? JSON.parse(value)
                     : parseInt(value);
             }
-            return acc;
-        }, {});
+        });
 
-    Object.assign(state, savedState);
+    // Update undo button state based on history
+    const undoButton = document.getElementById('undo-button');
+    if (undoButton) {
+        if (state.history && state.history.length > 0) {
+            undoButton.classList.remove('disabled');
+            undoButton.removeAttribute('disabled');
+        } else {
+            undoButton.classList.add('disabled');
+            undoButton.setAttribute('disabled', 'disabled');
+        }
+    }
 }
 
 function resetState() {
@@ -254,12 +270,18 @@ function saveStateToHistory() {
     if (state.history.length > 50) {
         state.history.shift();
     }
+
+    // Enable undo button when we add to history
+    const undoButton = document.getElementById('undo-button');
+    if (undoButton) {
+        undoButton.classList.remove('disabled');
+        undoButton.removeAttribute('disabled');
+    }
 }
 
 function undoLastAction() {
     if (state.history.length === 0) {
-        // No history to restore
-        return;
+        return; // No history to restore
     }
     
     // Get the previous state
@@ -274,9 +296,30 @@ function undoLastAction() {
     state.shots = previousState.shots;
     state.playerStats = previousState.playerStats;
     
-    // Update UI and save the current state
+    // Save the new state (with one less history item) to localStorage
     saveState();
+    
+    // Reset UI visibility
+    document.querySelector('.scoreboard').style.display = 'flex';
+    document.querySelector('.button-group').style.display = 'flex';
+    document.getElementById('current-set').style.display = 'block';
+    document.getElementById('reset-button').style.display = 'block';
+    document.getElementById('point-endings').style.display = 'none';
+    document.getElementById('error-types').style.display = 'none';
+    document.getElementById('shot-statistics').style.display = 'flex';
+    
+    // Update the display
     updateUI();
+    
+    // If this was the last state in history (back to start of match), disable undo
+    const undoButton = document.getElementById('undo-button');
+    if (state.history.length === 0) {
+        undoButton.classList.add('disabled');
+        undoButton.setAttribute('disabled', 'disabled');
+    } else {
+        undoButton.classList.remove('disabled');
+        undoButton.removeAttribute('disabled');
+    }
 }
 
 // UI functions
@@ -684,8 +727,16 @@ window.onload = () => {
         showPlayerNamesModal();
     }
 
-    // Add event listener for undo button
-    document.getElementById('undo-button').addEventListener('click', undoLastAction);
+    // Add event listener for undo button and initialize its state
+    const undoButton = document.getElementById('undo-button');
+    undoButton.addEventListener('click', undoLastAction);
+    if (!state.history || state.history.length === 0) {
+        undoButton.classList.add('disabled');
+        undoButton.setAttribute('disabled', 'disabled');
+    } else {
+        undoButton.classList.remove('disabled');
+        undoButton.removeAttribute('disabled');
+    }
     
     // Add error handling for event listeners to detect missing elements
     const allButtons = [

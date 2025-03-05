@@ -448,7 +448,8 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
 /* Game Format Selection Styling */
 .game-format {
     display: flex;
-    justify-content: space-around;
+    justify-content: center; /* Changed from space-around to center */
+    gap: 15px; /* Added specific gap to control spacing */
     margin-bottom: 15px;
     border-bottom: 1px solid #ccc;
     padding-bottom: 10px;
@@ -467,4 +468,11 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
 .format-option label {
     font-weight: bold;
     cursor: pointer;
+}
+
+.format-label {
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: 5px;
+    color: #000000;
 }

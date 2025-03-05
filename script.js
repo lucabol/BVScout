@@ -418,19 +418,19 @@ function displayStatistics() {
     // Add rows for each shot type
     shotTypes.forEach(method => {
         let displayName = method;
-        
-        if (method.startsWith('error')) {
-            displayName = 'Err:' + method.replace('error', '').substring(0, 2);
+        const isError = method.startsWith('error');
+        if (isError) {
+            displayName = `<span style="color: red;">${method.replace('error', '').substring(0, 3)}</span>`;
         } else if (method === 'attack') {
-            displayName = 'Atk';
+            displayName = `<span style="color: green;">Atk</span>`;
         } else if (method === 'attack2') {
-            displayName = 'Atk2';
+            displayName = `<span style="color: green;">Atk2</span>`;
         } else if (method === 'ace') {
-            displayName = 'Ace';
+            displayName = `<span style="color: green;">Ace</span>`;
         } else if (method === 'block') {
-            displayName = 'Blk';
+            displayName = `<span style="color: green;">Blk</span>`;
         } else {
-            displayName = method.substring(0, 4);
+            displayName = `<span style="color: green;">${method.substring(0, 4)}</span>`;
         }
         
         // Get values for current method

@@ -251,15 +251,18 @@ button:hover {
 .stats-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 5px 0;
-    font-size: 13px; /* Reduced from 14px */
+    margin: 3px 0;
+    font-size: 12px; /* Reduced from 13px */
 }
 
 .stats-table th, .stats-table td {
-    padding: 2px 1px; /* Reduced from 4px 2px */
+    padding: 1px 0; /* Minimal padding */
     border: 1px solid #000000;
     text-align: center;
     vertical-align: middle;
+    max-width: 40px; /* Limit cell width */
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .stats-table th {
@@ -284,10 +287,11 @@ button:hover {
 
 /* Percentage display in statistics table */
 .stat-percent {
-    display: block;
+    display: inline-block;
     font-size: 9px; /* Make it smaller than the main value */
     color: #666666; /* Slightly muted color */
     margin-top: -2px; /* Bring it closer to the number */
+    margin-left: 2px;
 }
 
 /* Team buttons styling */

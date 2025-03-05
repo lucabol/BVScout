@@ -356,7 +356,7 @@ function displayStatistics() {
     const formatCell = (value, columnTotal) => {
         if (value === 0 || columnTotal === 0) return '0';
         const percentage = Math.round((value / columnTotal) * 100);
-        return `${value}<span class="stat-percent">${percentage}%</span>`;
+        return `${value} <span class="stat-percent">(${percentage}%)</span>`;
     };
     
     // Generate the HTML table with abbreviated headers

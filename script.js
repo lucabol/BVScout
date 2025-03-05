@@ -233,52 +233,95 @@ function updateMatchStatus() {
 function displayStatistics() {
     const shotTypes = ['attack', 'attack2', 'block', 'ace', 
                       'errorServe', 'errorRecept', 'errorAttack', 'errorDouble', 'errorNetTouch'];
+    
+    // Calculate all player stats
     const stats = state.shots.reduce((acc, shot) => {
         if (!acc[shot.team]) acc[shot.team] = {};
         if (!acc[shot.team][shot.method]) acc[shot.team][shot.method] = 0;
         acc[shot.team][shot.method]++;
         return acc;
     }, {});
-
-    const teams = [
-        { id: 'home1', name: state.playerNames.home1 },
-        { id: 'home2', name: state.playerNames.home2 },
-        { id: 'away1', name: state.playerNames.away1 },
-        { id: 'away2', name: state.playerNames.away2 }
-    ];
-
-    const statsHtml = teams.map(team => {
-        const teamStats = stats[team.id] || {};
-        const totalShots = Object.values(teamStats).reduce((a, b) => a + b, 0);
+    
+    // Create team totals
+    const homeStats = {};
+    const awayStats = {};
+    
+    // Calculate team totals for each shot type
+    shotTypes.forEach(method => {
+        homeStats[method] = (stats['home1'] ? stats['home1'][method] || 0 : 0) + 
+                           (stats['home2'] ? stats['home2'][method] || 0 : 0);
         
-        return `
-            <div class="team-stats">
-                <table>
-                    <tr><th>${team.name}</th><th>Count</th><th>Percentage</th></tr>
-                    ${shotTypes.map(method => {
-                        const count = teamStats[method] || 0;
-                        const percentage = totalShots ? ((count / totalShots) * 100).toFixed(2) : '0.00';
-                        let displayName = method;
-                        
-                        if (method.startsWith('error')) {
-                            displayName = 'Error: ' + method.replace('error', '');
-                        } else if (method === 'attack') {
-                            displayName = 'Attack';
-                        } else if (method === 'attack2') {
-                            displayName = 'Attack 2nd';
-                        } else if (method === 'ace') {
-                            displayName = 'Ace';
-                        } else {
-                            displayName = method.charAt(0).toUpperCase() + method.slice(1);
-                        }
-                        
-                        return `<tr><td>${displayName}</td><td>${count}</td><td>${percentage}%</td></tr>`;
-                    }).join('')}
-                </table>
-            </div>`;
-    }).join('');
-
-    document.getElementById('shot-statistics').innerHTML = `<div id="shot-statistics">${statsHtml}</div>`;
+        awayStats[method] = (stats['away1'] ? stats['away1'][method] || 0 : 0) + 
+                           (stats['away2'] ? stats['away2'][method] || 0 : 0);
+    });
+    
+    // Get 4-letter abbreviations of player names
+    const abbrevName = name => name.substring(0, 4);
+    
+    // Generate the HTML table with abbreviated headers
+    let statsHtml = `
+        <table class="stats-table">
+            <tr>
+                <th>Act</th>
+                <th>Home</th>
+                <th>Away</th>
+                <th>${abbrevName(state.playerNames.home1)}</th>
+                <th>${abbrevName(state.playerNames.home2)}</th>
+                <th>${abbrevName(state.playerNames.away1)}</th>
+                <th>${abbrevName(state.playerNames.away2)}</th>
+            </tr>`;
+    
+    // Add rows for each shot type
+    shotTypes.forEach(method => {
+        let displayName = method;
+        
+        if (method.startsWith('error')) {
+            displayName = 'Err:' + method.replace('error', '').substring(0, 2);
+        } else if (method === 'attack') {
+            displayName = 'Atk';
+        } else if (method === 'attack2') {
+            displayName = 'Atk2';
+        } else if (method === 'ace') {
+            displayName = 'Ace';
+        } else if (method === 'block') {
+            displayName = 'Blk';
+        } else {
+            displayName = method.substring(0, 4);
+        }
+        
+        statsHtml += `
+            <tr>
+                <td>${displayName}</td>
+                <td>${homeStats[method] || 0}</td>
+                <td>${awayStats[method] || 0}</td>
+                <td>${stats['home1'] ? stats['home1'][method] || 0 : 0}</td>
+                <td>${stats['home2'] ? stats['home2'][method] || 0 : 0}</td>
+                <td>${stats['away1'] ? stats['away1'][method] || 0 : 0}</td>
+                <td>${stats['away2'] ? stats['away2'][method] || 0 : 0}</td>
+            </tr>`;
+    });
+    
+    // Add row for totals
+    const getTotal = player => shotTypes.reduce((total, method) => {
+        return total + (stats[player] ? stats[player][method] || 0 : 0);
+    }, 0);
+    
+    const homeTotalPoints = getTotal('home1') + getTotal('home2');
+    const awayTotalPoints = getTotal('away1') + getTotal('away2');
+    
+    statsHtml += `
+        <tr class="total-row">
+            <td><strong>Tot</strong></td>
+            <td><strong>${homeTotalPoints}</strong></td>
+            <td><strong>${awayTotalPoints}</strong></td>
+            <td><strong>${getTotal('home1')}</strong></td>
+            <td><strong>${getTotal('home2')}</strong></td>
+            <td><strong>${getTotal('away1')}</strong></td>
+            <td><strong>${getTotal('away2')}</strong></td>
+        </tr>
+    </table>`;
+    
+    document.getElementById('shot-statistics').innerHTML = statsHtml;
 }
 
 // Action handlers

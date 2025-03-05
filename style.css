@@ -213,19 +213,17 @@ button:hover {
 
 /* New styles for statistics tables */
 #shot-statistics {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 2px;          /* Further reduced gap */
-    margin: 2px 0;     /* Minimal margins */
-    width: 100%;       /* Full width */
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
 }
 
 #shot-statistics .team-stats {
-    flex: 1 1 45%;
-    min-width: 300px;
-    margin: 0;        /* Remove margins */
-    padding: 0;       /* Remove padding */
+    flex: none;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
 }
 
 #shot-statistics table {
@@ -247,6 +245,40 @@ button:hover {
 #shot-statistics td {
     background-color: #ffffff;
     color: #000000;
+}
+
+/* New styles for the combined statistics table */
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 5px 0;
+    font-size: 13px; /* Reduced from 14px */
+}
+
+.stats-table th, .stats-table td {
+    padding: 2px 1px; /* Reduced from 4px 2px */
+    border: 1px solid #000000;
+    text-align: center;
+}
+
+.stats-table th {
+    background-color: #000000;
+    color: #ffffff;
+    font-weight: bold;
+    max-width: 35px; /* Limit header width */
+    overflow: hidden;
+}
+
+.stats-table td:first-child {
+    text-align: left;
+    padding-left: 3px; /* Reduced from 5px */
+    max-width: 60px; /* Reduced from 90px */
+    overflow: hidden;
+}
+
+.stats-table .total-row {
+    background-color: #e0e0e0;
+    font-weight: bold;
 }
 
 /* Team buttons styling */

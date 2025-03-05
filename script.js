@@ -465,6 +465,7 @@ function chooseTeam(team) {
     document.querySelector('.button-group').style.display = 'none';
     document.getElementById('current-set').style.display = 'block'; // Keep set score visible
     document.getElementById('reset-button').style.display = 'none';
+    document.getElementById('undo-button').style.display = 'none'; // Hide undo button in point endings screen
     document.getElementById('point-endings').style.display = 'flex';
     document.getElementById('error-types').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
@@ -505,6 +506,7 @@ function chooseErrorType(player) {
     document.querySelector('.button-group').style.display = 'none';
     document.getElementById('current-set').style.display = 'block'; // Keep set score visible
     document.getElementById('reset-button').style.display = 'none';
+    document.getElementById('undo-button').style.display = 'none'; // Hide undo button in error types screen
     document.getElementById('point-endings').style.display = 'none';
     document.getElementById('error-types').style.display = 'flex';
     document.getElementById('shot-statistics').style.display = 'none';
@@ -606,6 +608,7 @@ function endErrorPoint(errorType) {
         document.querySelector('.button-group').style.display = 'flex';
         document.getElementById('current-set').style.display = 'block';
         document.getElementById('reset-button').style.display = 'block';
+        document.getElementById('undo-button').style.display = 'block'; // Show undo button again
         document.getElementById('error-types').style.display = 'none';
         document.getElementById('point-endings').style.display = 'none'; // Make sure point endings screen stays hidden
         document.getElementById('shot-statistics').style.display = 'flex';
@@ -627,6 +630,7 @@ function endPoint(method) {
         document.querySelector('.button-group').style.display = 'flex';
         document.getElementById('current-set').style.display = 'block';
         document.getElementById('reset-button').style.display = 'block';
+        document.getElementById('undo-button').style.display = 'block'; // Show undo button again
         document.getElementById('point-endings').style.display = 'none';
         document.getElementById('shot-statistics').style.display = 'flex';
     }

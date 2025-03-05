@@ -476,12 +476,14 @@ function resetMatch() {
 }
 
 function saveMatch() {
+    const matchDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+    const matchFileName = `${matchDate}_${state.playerNames.home1}_and_${state.playerNames.home2}_vs_${state.playerNames.away1}_and_${state.playerNames.away2}.json`;
     const matchData = JSON.stringify(state, null, 2);
     const blob = new Blob([matchData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'match_data.json';
+    a.download = matchFileName;
     a.click();
     URL.revokeObjectURL(url);
 }

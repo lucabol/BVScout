@@ -21,7 +21,8 @@ const state = {
         away1: 'Away1',
         away2: 'Away2'
     },
-    gameFormat: '3-3-3' // Default game format
+    gameFormat: '3-3-3', // Default game format
+    history: [] // Array to store state history for undo functionality
 };
 
 // Constants for different game formats
@@ -75,6 +76,9 @@ function updatePlayerStats(player, method) {
 
 // Score management
 function incrementScore(team, method) {
+    // Save current state to history before making changes
+    saveStateToHistory();
+    
     if (state.currentSet >= FORMATS[state.gameFormat].TOTAL_SETS) return;
 
     if (team === 'home1' || team === 'home2') {
@@ -227,6 +231,51 @@ function savePlayerNames() {
     document.getElementById('match-status').innerText = '';
     document.getElementById('reset-button').innerText = 'Reset';
     
+    updateUI();
+}
+
+// New functions for undo functionality
+function saveStateToHistory() {
+    // Create a deep copy of the current state (excluding history array)
+    const stateCopy = JSON.parse(JSON.stringify({
+        team1Scores: state.team1Scores.slice(),
+        team2Scores: state.team2Scores.slice(),
+        team1SetWins: state.team1SetWins,
+        team2SetWins: state.team2SetWins,
+        currentSet: state.currentSet,
+        shots: state.shots.slice(),
+        playerStats: JSON.parse(JSON.stringify(state.playerStats))
+    }));
+    
+    // Push the copy to history
+    state.history.push(stateCopy);
+    
+    // Limit history to last 50 states to prevent memory issues
+    if (state.history.length > 50) {
+        state.history.shift();
+    }
+}
+
+function undoLastAction() {
+    if (state.history.length === 0) {
+        // No history to restore
+        return;
+    }
+    
+    // Get the previous state
+    const previousState = state.history.pop();
+    
+    // Restore previous values
+    state.team1Scores = previousState.team1Scores;
+    state.team2Scores = previousState.team2Scores;
+    state.team1SetWins = previousState.team1SetWins;
+    state.team2SetWins = previousState.team2SetWins;
+    state.currentSet = previousState.currentSet;
+    state.shots = previousState.shots;
+    state.playerStats = previousState.playerStats;
+    
+    // Update UI and save the current state
+    saveState();
     updateUI();
 }
 
@@ -471,6 +520,9 @@ function chooseErrorType(player) {
 
 function endErrorPoint(errorType) {
     if (state.errorPlayer) {
+        // Save current state to history before making changes
+        saveStateToHistory();
+        
         // Determine which team made the error and attribute the error statistic to them
         let errorTeam;
         let scoringTeam;
@@ -608,13 +660,16 @@ window.onload = () => {
         showPlayerNamesModal();
     }
 
+    // Add event listener for undo button
+    document.getElementById('undo-button').addEventListener('click', undoLastAction);
+    
     // Add error handling for event listeners to detect missing elements
     const allButtons = [
         'home-one-button', 'home-two-button', 'away-one-button', 'away-two-button',
         'away-err1-button', 'away-err2-button', 'home-err1-button', 'home-err2-button',
         'serve-error-button', 'recept-error-button', 'attack-error-button', 'double-error-button', 'other-error-button',
         'attack-button', 'attack2-button', 'block-button', 'ace-button',
-        'reset-button', 'save-button', 'load-button', 'load-file'
+        'reset-button', 'save-button', 'load-button', 'load-file', 'undo-button'
     ];
     
     // Check if any buttons are missing

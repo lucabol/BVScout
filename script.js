@@ -22,7 +22,10 @@ const state = {
         away2: 'Away2'
     },
     gameFormat: '3-3-3', // Default game format
-    history: [] // Array to store state history for undo functionality
+    history: [], // Array to store state history for undo functionality
+    servingTeam: 'team1', // Track which team is currently serving (team1 or team2)
+    initialServingTeam: 'team1', // Track which team started serving for this set
+    waitForServeSelection: false // Flag to indicate we're waiting for serve selection
 };
 
 // Constants for different game formats
@@ -81,11 +84,18 @@ function incrementScore(team, method) {
     
     if (state.currentSet >= FORMATS[state.gameFormat].TOTAL_SETS) return;
 
+    let scoringTeam = '';
+    
     if (team === 'home1' || team === 'home2') {
         state.team1Scores[state.currentSet]++;
+        scoringTeam = 'team1';
     } else if (team === 'away1' || team === 'away2') {
         state.team2Scores[state.currentSet]++;
+        scoringTeam = 'team2';
     }
+
+    // Update the serving team - whoever scores serves next
+    state.servingTeam = scoringTeam;
 
     state.shots.push({ team, method });
     updatePlayerStats(team, method);
@@ -93,6 +103,16 @@ function incrementScore(team, method) {
     if (isSetOver()) {
         updateSetWins();
         state.currentSet++;
+        
+        // For the new set, check if it's the third set and show the serve selection modal
+        if (state.currentSet === 2 && state.currentSet < FORMATS[state.gameFormat].TOTAL_SETS) {
+            state.waitForServeSelection = true;
+            showServeSelectionModal();
+        } else if (state.currentSet < FORMATS[state.gameFormat].TOTAL_SETS) {
+            // For other sets, alternate the serving team
+            state.initialServingTeam = state.initialServingTeam === 'team1' ? 'team2' : 'team1';
+            state.servingTeam = state.initialServingTeam;
+        }
     }
 
     if (isMatchOver()) {
@@ -122,6 +142,17 @@ function loadState() {
     const savedGameFormat = localStorage.getItem('gameFormat');
     if (savedGameFormat && (savedGameFormat === '21-21-15' || savedGameFormat === '3-3-3')) {
         state.gameFormat = savedGameFormat;
+    }
+
+    // Load serving team information
+    const savedServingTeam = localStorage.getItem('servingTeam');
+    if (savedServingTeam) {
+        state.servingTeam = savedServingTeam;
+    }
+    
+    const savedInitialServingTeam = localStorage.getItem('initialServingTeam');
+    if (savedInitialServingTeam) {
+        state.initialServingTeam = savedInitialServingTeam;
     }
 
     // Load history if it exists
@@ -157,6 +188,7 @@ function loadState() {
 function resetState() {
     const previousNames = {...state.playerNames}; // Store the current names
     const currentFormat = state.gameFormat; // Store the current game format
+    const initialServingTeam = state.initialServingTeam; // Store selected serving team
     
     Object.assign(state, {
         team1Scores: [0, 0, 0],
@@ -175,7 +207,9 @@ function resetState() {
         errorMode: false,
         errorPlayer: null,
         playerNames: previousNames, // Restore the previous names
-        gameFormat: currentFormat   // Keep the selected game format
+        gameFormat: currentFormat,   // Keep the selected game format
+        servingTeam: initialServingTeam, // Set the current server to the initial choice
+        initialServingTeam: initialServingTeam // Keep the selected initial server
     });
     
     // Ensure reset button text is consistent
@@ -212,6 +246,44 @@ function showPlayerNamesModal() {
     } else {
         document.getElementById('format-3').checked = true;
     }
+    
+    // Set the correct radio button for serving team
+    if (state.initialServingTeam === 'team1') {
+        document.getElementById('home-serve').checked = true;
+    } else {
+        document.getElementById('away-serve').checked = true;
+    }
+}
+
+// New function for showing the third set serve selection modal
+function showServeSelectionModal() {
+    const modal = document.getElementById('serve-selection-modal');
+    modal.style.display = 'flex';
+    
+    // Disable all team buttons while waiting for serve selection
+    document.querySelectorAll('.team button').forEach(button => {
+        button.disabled = true;
+    });
+}
+
+// New function for handling the third set serve selection
+function saveServeSelection() {
+    const homeServeSelected = document.getElementById('third-home-serve').checked;
+    state.initialServingTeam = homeServeSelected ? 'team1' : 'team2';
+    state.servingTeam = state.initialServingTeam;
+    state.waitForServeSelection = false;
+    
+    // Hide modal
+    document.getElementById('serve-selection-modal').style.display = 'none';
+    
+    // Re-enable team buttons
+    document.querySelectorAll('.team button').forEach(button => {
+        button.disabled = false;
+    });
+    
+    // Update UI to reflect the new serving team
+    updateServingIndicator();
+    saveState();
 }
 
 function savePlayerNames() {
@@ -224,6 +296,11 @@ function savePlayerNames() {
     // Get selected game format
     const format21Selected = document.getElementById('format-21').checked;
     state.gameFormat = format21Selected ? '21-21-15' : '3-3-3';
+    
+    // Get selected serving team
+    const homeServeSelected = document.getElementById('home-serve').checked;
+    state.initialServingTeam = homeServeSelected ? 'team1' : 'team2';
+    state.servingTeam = state.initialServingTeam; // Set current server to the initial choice
 
     // Hide modal
     document.getElementById('player-names-modal').style.display = 'none';
@@ -234,6 +311,7 @@ function savePlayerNames() {
     // Update UI with new names and reset state
     updateButtonNames();
     displayStatistics();
+    updateServingIndicator(); // Update the serving indicator display
     saveState();
     
     // Reset UI elements
@@ -260,7 +338,9 @@ function saveStateToHistory() {
         team2SetWins: state.team2SetWins,
         currentSet: state.currentSet,
         shots: state.shots.slice(),
-        playerStats: JSON.parse(JSON.stringify(state.playerStats))
+        playerStats: JSON.parse(JSON.stringify(state.playerStats)),
+        servingTeam: state.servingTeam,
+        initialServingTeam: state.initialServingTeam
     }));
     
     // Push the copy to history
@@ -295,6 +375,8 @@ function undoLastAction() {
     state.currentSet = previousState.currentSet;
     state.shots = previousState.shots;
     state.playerStats = previousState.playerStats;
+    state.servingTeam = previousState.servingTeam;
+    state.initialServingTeam = previousState.initialServingTeam;
     
     // Save the new state (with one less history item) to localStorage
     saveState();
@@ -328,9 +410,45 @@ function updateUI() {
     document.getElementById('team2-score').innerText = state.team2Scores[state.currentSet];
     document.getElementById('current-set').innerText = `${state.team1SetWins}-${state.team2SetWins}`;
     
+    // Disable team buttons if waiting for serve selection
+    if (state.waitForServeSelection) {
+        document.querySelectorAll('.team button').forEach(button => {
+            button.disabled = true;
+        });
+    }
+    
     updateSetResults();
     updateMatchStatus();
+    updateServingIndicator();
     displayStatistics();
+}
+
+// New function to update the serving indicator
+function updateServingIndicator() {
+    // First ensure the serving indicator elements exist in the DOM
+    const teams = document.querySelectorAll('.team');
+    
+    // Create indicators if they don't exist
+    for (let i = 0; i < teams.length; i++) {
+        let indicator = teams[i].querySelector('.serving-indicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.className = 'serving-indicator';
+            teams[i].appendChild(indicator);
+        }
+    }
+    
+    // Now show the correct indicator based on the current serving team
+    const team1Indicator = teams[0].querySelector('.serving-indicator');
+    const team2Indicator = teams[1].querySelector('.serving-indicator');
+    
+    if (state.servingTeam === 'team1') {
+        team1Indicator.style.display = 'block';
+        team2Indicator.style.display = 'none';
+    } else {
+        team1Indicator.style.display = 'none';
+        team2Indicator.style.display = 'block';
+    }
 }
 
 function updateSetResults() {
@@ -621,14 +739,28 @@ function endErrorPoint(errorType) {
         // Increment score for the team that gets the point
         if (scoringTeam === 'home1' || scoringTeam === 'home2') {
             state.team1Scores[state.currentSet]++;
+            // Update who is serving - team1 serves next
+            state.servingTeam = 'team1';
         } else if (scoringTeam === 'away1' || scoringTeam === 'away2') {
             state.team2Scores[state.currentSet]++;
+            // Update who is serving - team2 serves next
+            state.servingTeam = 'team2';
         }
 
         // Check if set/match is over
         if (isSetOver()) {
             updateSetWins();
             state.currentSet++;
+            
+            // For the new set, check if it's the third set and show the serve selection modal
+            if (state.currentSet === 2 && state.currentSet < FORMATS[state.gameFormat].TOTAL_SETS) {
+                state.waitForServeSelection = true;
+                showServeSelectionModal();
+            } else if (state.currentSet < FORMATS[state.gameFormat].TOTAL_SETS) {
+                // For other sets, alternate the serving team
+                state.initialServingTeam = state.initialServingTeam === 'team1' ? 'team2' : 'team1';
+                state.servingTeam = state.initialServingTeam;
+            }
         }
 
         if (isMatchOver()) {
@@ -739,7 +871,23 @@ const addTitleAndInfo = () => {
 // Initialize
 window.onload = () => {
     addTitleAndInfo();
+    
+    // Create serving indicators for both teams
+    const teams = document.querySelectorAll('.team');
+    teams.forEach(team => {
+        const indicator = document.createElement('div');
+        indicator.className = 'serving-indicator';
+        team.appendChild(indicator);
+    });
+    
     loadState();
+    
+    // Load the waitForServeSelection flag if it exists
+    const savedWaitForServeSelection = localStorage.getItem('waitForServeSelection');
+    if (savedWaitForServeSelection) {
+        state.waitForServeSelection = savedWaitForServeSelection === 'true';
+    }
+    
     updateButtonNames();
     updateUI();
     
@@ -780,9 +928,17 @@ window.onload = () => {
     // Event listener for player names modal
     document.getElementById('save-names-button').addEventListener('click', savePlayerNames);
     
+    // Event listener for third set serve selection modal
+    document.getElementById('save-serve-button').addEventListener('click', saveServeSelection);
+    
     // Show the modal on first load if no state exists
     if (!localStorage.getItem('playerNames')) {
         showPlayerNamesModal();
+    }
+
+    // If we're waiting for serve selection (e.g., page was refreshed during selection)
+    if (state.waitForServeSelection) {
+        showServeSelectionModal();
     }
 
     // Add event listener for undo button and initialize its state
@@ -802,7 +958,8 @@ window.onload = () => {
         'away-err1-button', 'away-err2-button', 'home-err1-button', 'home-err2-button',
         'serve-error-button', 'recept-error-button', 'attack-error-button', 'double-error-button', 'other-error-button',
         'attack-button', 'attack2-button', 'block-button', 'ace-button',
-        'reset-button', 'save-button', 'load-button', 'load-file', 'undo-button'
+        'reset-button', 'save-button', 'load-button', 'load-file', 'undo-button',
+        'save-serve-button' // Added third set serve button
     ];
     
     // Check if any buttons are missing

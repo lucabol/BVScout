@@ -37,7 +37,37 @@
                 <label for="away2-name">Away Player 2:</label>
                 <input type="text" id="away2-name" placeholder="Away2" maxlength="10">
             </div>
+            <div class="format-label">First Serve:</div>
+            <div class="serving-team-selection">
+                <div class="format-option">
+                    <input type="radio" id="home-serve" name="first-serve" value="team1" checked>
+                    <label for="home-serve">Home</label>
+                </div>
+                <div class="format-option">
+                    <input type="radio" id="away-serve" name="first-serve" value="team2">
+                    <label for="away-serve">Away</label>
+                </div>
+            </div>
             <button id="save-names-button">Start Match</button>
+        </div>
+    </div>
+    
+    <!-- New modal for third set serve selection -->
+    <div class="modal-overlay" id="serve-selection-modal">
+        <div class="modal-content">
+            <h2>Choose Serving Team</h2>
+            <div class="format-label">Third Set Serve:</div>
+            <div class="serving-team-selection">
+                <div class="format-option">
+                    <input type="radio" id="third-home-serve" name="third-set-serve" value="team1" checked>
+                    <label for="third-home-serve">Home</label>
+                </div>
+                <div class="format-option">
+                    <input type="radio" id="third-away-serve" name="third-set-serve" value="team2">
+                    <label for="third-away-serve">Away</label>
+                </div>
+            </div>
+            <button id="save-serve-button">Start Set</button>
         </div>
     </div>
 

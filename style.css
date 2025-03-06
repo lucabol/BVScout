@@ -25,6 +25,7 @@ html, body {
     --utility-button-gap: 0px;  /* Removed gap completely */
     --background-light: #f0f0f0;
     --background-dark: #e0e0e0;
+    --serve-indicator-color: #000000; /* Changed from #f57c00 (orange) to black */
 }
 
 body {
@@ -76,6 +77,20 @@ body {
     flex: 1;
     min-width: 0; /* Allow flexbox to shrink below content size if needed */
     max-width: calc(50% - 2px);  /* Adjusted for new margins */
+    position: relative; /* For absolute positioning of the serving indicator */
+}
+
+/* Serving indicator */
+.serving-indicator {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--serve-indicator-color);
+    box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    display: none; /* Hidden by default, shown via JavaScript */
 }
 
 /* Global button styling */
@@ -459,7 +474,7 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
 }
 
 /* Game Format Selection Styling */
-.game-format {
+.game-format, .serving-team-selection {
     display: flex;
     justify-content: center; /* Changed from space-around to center */
     gap: 15px; /* Added specific gap to control spacing */

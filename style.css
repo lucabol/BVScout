@@ -35,6 +35,8 @@ body {
     text-align: center;
     background-color: var(--background-light); /* Changed to light grey to match container */
     color: #000000;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .container {
@@ -503,4 +505,45 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
     text-align: left;
     margin-bottom: 5px;
     color: #000000;
+}
+
+/* Ensure the title and info icon are centered within the limited width */
+#title-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* Adjust the title and info icon styles */
+#title {
+    font-size: 24px;
+    margin: 10px 0;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+}
+
+#info-icon {
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: 10px;
+    border-radius: 50%;
+    padding: 2px 6px;
+    background-color: transparent;
+    position: absolute;
+    right: 10px;
+}
+
+/* Adjust the info pane styles */
+#info-pane {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 10px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    width: 200px;
 }

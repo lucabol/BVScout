@@ -522,28 +522,34 @@ function displayStatistics() {
     // Create main container for all stats tables
     let allStatsHtml = '';
     
-    // 1. Show stats for each completed set, plus current set
-    for (let setIndex = 0; setIndex <= state.currentSet; setIndex++) {
-        if (setIndex < FORMATS[state.gameFormat].TOTAL_SETS) {
-            // Only include sets that have been started
-            const setShots = state.shotsBySet[setIndex];
-            
-            // Skip if no shots in this set
-            if (setShots.length === 0 && setIndex !== state.currentSet) continue;
-            
-            // Calculate set statistics
-            const setStats = generateStatsFromShots(setShots, shotTypes);
-            
-            // Generate table for this set
-            const setTitle = `<h3>Set ${setIndex + 1} Stats</h3>`;
-            const setTable = generateStatsTable(setStats, shotTypes);
-            
-            // Add section for this set
-            allStatsHtml += `<div class="set-stats">${setTitle}${setTable}</div>`;
-        }
+    // 1. Show current set stats first
+    if (state.currentSet < FORMATS[state.gameFormat].TOTAL_SETS) {
+        const currentSetShots = state.shotsBySet[state.currentSet];
+        const currentSetStats = generateStatsFromShots(currentSetShots, shotTypes);
+        const currentSetTitle = `<h3>Set ${state.currentSet + 1} Stats (Current)</h3>`;
+        const currentSetTable = generateStatsTable(currentSetStats, shotTypes);
+        allStatsHtml += `<div class="set-stats current-set-stats">${currentSetTitle}${currentSetTable}</div>`;
     }
     
-    // 2. Show summary table for the entire game
+    // 2. Show previous sets in reverse order (most recent first)
+    for (let setIndex = state.currentSet - 1; setIndex >= 0; setIndex--) {
+        const setShots = state.shotsBySet[setIndex];
+        
+        // Skip if no shots in this set
+        if (setShots.length === 0) continue;
+        
+        // Calculate set statistics
+        const setStats = generateStatsFromShots(setShots, shotTypes);
+        
+        // Generate table for this set
+        const setTitle = `<h3>Set ${setIndex + 1} Stats</h3>`;
+        const setTable = generateStatsTable(setStats, shotTypes);
+        
+        // Add section for this set
+        allStatsHtml += `<div class="set-stats">${setTitle}${setTable}</div>`;
+    }
+    
+    // 3. Show summary table for the entire game
     const gameStats = generateStatsFromShots(state.shots, shotTypes);
     const gameTitle = '<h3>Game Summary</h3>';
     const gameTable = generateStatsTable(gameStats, shotTypes);
@@ -1069,4 +1075,5 @@ window.onload = () => {
     document.getElementById('reset-button').style.display = 'block';
     document.getElementById('point-endings').style.display = 'none';
     document.getElementById('error-types').style.display = 'none';
+    document.getElementById('shot-statistics').style.display = 'flex';
 };

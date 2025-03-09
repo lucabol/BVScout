@@ -108,8 +108,9 @@ function incrementScore(team, method) {
         updateSetWins();
         state.currentSet++;
         
-        // For the new set, check if it's the third set and show the serve selection modal
-        if (state.currentSet === 2 && state.currentSet < FORMATS[state.gameFormat].TOTAL_SETS) {
+        // For the new set, check if it's the third set and the score is tied at 1-1
+        if (state.currentSet === 2 && state.currentSet < FORMATS[state.gameFormat].TOTAL_SETS && 
+            state.team1SetWins === 1 && state.team2SetWins === 1) {
             state.waitForServeSelection = true;
             showServeSelectionModal();
         } else if (state.currentSet < FORMATS[state.gameFormat].TOTAL_SETS) {

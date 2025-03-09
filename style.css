@@ -547,3 +547,120 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
     border-radius: 8px;
     width: 200px;
 }
+
+/* New styles for set-specific statistics tables */
+.set-stats, .game-stats {
+    margin: 10px 0;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: var(--background-light);
+}
+
+.set-stats h3, .game-stats h3 {
+    margin: 5px 0;
+    font-size: 16px;
+    color: #000000;
+    text-align: center;
+}
+
+.game-stats {
+    border-top: 2px solid #000000;
+}
+
+.game-stats h3 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Improve responsive layout for shot statistics section */
+#shot-statistics {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Allow table containers to scroll horizontally on small screens */
+.set-stats, .game-stats {
+    overflow-x: auto;
+}
+
+/* Additional table styling */
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3px 0;
+    font-size: 12px; /* Smaller font size for better mobile fit */
+}
+
+.stats-table th, .stats-table td {
+    padding: 1px 0; /* Minimal padding */
+    border: 1px solid #000000;
+    text-align: center;
+    vertical-align: middle;
+    max-width: 40px; /* Limit cell width */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.stats-table th {
+    background-color: #000000;
+    color: #ffffff;
+    font-weight: bold;
+    max-width: 35px; /* Limit header width */
+    overflow: hidden;
+}
+
+/* Make first column distinct with a small visual indication */
+.stats-table td:first-child {
+    text-align: left;
+    padding-left: 3px; /* Reduced from 5px */
+    max-width: 60px; /* Reduced from 90px */
+    border-right: 2px solid #000000; /* Add thicker right border */
+    font-weight: bold;
+}
+
+/* Make table headers distinct */
+.stats-table tr:first-child {
+    border-bottom: 2px solid #000000; /* Add thicker bottom border */
+}
+
+/* Colorize the total rows for better visibility */
+.stats-table .total-row {
+    background-color: #e0e0e0;
+    border-top: 2px solid #000000; /* Add thicker top border */
+    font-weight: bold;
+}
+
+/* Percentage display in statistics table */
+.stat-percent {
+    display: inline-block;
+    font-size: 9px; /* Make it smaller than the main value */
+    color: #666666; /* Slightly muted color */
+    margin-top: -2px; /* Bring it closer to the number */
+    margin-left: 2px;
+}
+
+/* Additional responsive adjustments */
+@media (max-width: 480px) {
+    .stats-table {
+        font-size: 10px; /* Even smaller on very small screens */
+    }
+    
+    .set-stats h3, .game-stats h3 {
+        font-size: 14px; /* Smaller headings on small screens */
+    }
+    
+    .stat-percent {
+        font-size: 8px; /* Smaller percentages on small screens */
+    }
+}
+
+/* Ensure main shot-statistics container fills available width */
+#shot-statistics {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}

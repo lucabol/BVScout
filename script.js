@@ -5,7 +5,8 @@ const state = {
     team1SetWins: 0,
     team2SetWins: 0,
     currentSet: 0,
-    shots: [],
+    shots: [],  // Global shots array will still keep all shots for backwards compatibility
+    shotsBySet: [[], [], []], // New array to track shots by set
     playerStats: {
         home1: {},
         home2: {},
@@ -97,7 +98,10 @@ function incrementScore(team, method) {
     // Update the serving team - whoever scores serves next
     state.servingTeam = scoringTeam;
 
+    // Record shot for the current set AND the global shot array
     state.shots.push({ team, method });
+    state.shotsBySet[state.currentSet].push({ team, method });
+    
     updatePlayerStats(team, method);
 
     if (isSetOver()) {
@@ -162,15 +166,50 @@ function loadState() {
     }
 
     // Then load the rest of the state
-    ['team1Scores', 'team2Scores', 'team1SetWins', 'team2SetWins', 'currentSet', 'playerStats', 'shots']
+    ['team1Scores', 'team2Scores', 'team1SetWins', 'team2SetWins', 'currentSet', 'playerStats', 'shots', 'shotsBySet']
         .forEach(key => {
             const value = localStorage.getItem(key);
             if (value !== null) {
-                state[key] = ['team1Scores', 'team2Scores', 'playerStats', 'shots'].includes(key)
+                state[key] = ['team1Scores', 'team2Scores', 'playerStats', 'shots', 'shotsBySet'].includes(key)
                     ? JSON.parse(value)
                     : parseInt(value);
             }
         });
+
+    // Initialize shotsBySet if it doesn't exist (for backward compatibility)
+    if (!state.shotsBySet) {
+        state.shotsBySet = [[], [], []];
+        
+        // Try to reconstruct shotsBySet from existing shots if possible
+        // This is a best-effort attempt for games saved with older versions
+        if (state.shots && state.shots.length > 0) {
+            let setIndex = 0;
+            let team1Score = 0;
+            let team2Score = 0;
+            
+            state.shots.forEach(shot => {
+                // Track which set this shot belongs to
+                if (team1Score >= FORMATS[state.gameFormat].POINTS_TO_WIN_SET[setIndex] ||
+                    team2Score >= FORMATS[state.gameFormat].POINTS_TO_WIN_SET[setIndex]) {
+                    setIndex++;
+                    team1Score = 0;
+                    team2Score = 0;
+                }
+                
+                // Increment scores to track set changes
+                if (shot.team === 'home1' || shot.team === 'home2') {
+                    team1Score++;
+                } else if (shot.team === 'away1' || shot.team === 'away2') {
+                    team2Score++;
+                }
+                
+                // Add shot to the appropriate set
+                if (setIndex < 3) {
+                    state.shotsBySet[setIndex].push(shot);
+                }
+            });
+        }
+    }
 
     // Update undo button state based on history
     const undoButton = document.getElementById('undo-button');
@@ -197,6 +236,7 @@ function resetState() {
         team2SetWins: 0,
         currentSet: 0,
         shots: [],
+        shotsBySet: [[], [], []], // Reset shots by set
         playerStats: {
             home1: {},
             home2: {},
@@ -338,6 +378,7 @@ function saveStateToHistory() {
         team2SetWins: state.team2SetWins,
         currentSet: state.currentSet,
         shots: state.shots.slice(),
+        shotsBySet: JSON.parse(JSON.stringify(state.shotsBySet)), // Include shotsBySet in history
         playerStats: JSON.parse(JSON.stringify(state.playerStats)),
         servingTeam: state.servingTeam,
         initialServingTeam: state.initialServingTeam
@@ -374,6 +415,7 @@ function undoLastAction() {
     state.team2SetWins = previousState.team2SetWins;
     state.currentSet = previousState.currentSet;
     state.shots = previousState.shots;
+    state.shotsBySet = previousState.shotsBySet; // Restore shotsBySet from history
     state.playerStats = previousState.playerStats;
     state.servingTeam = previousState.servingTeam;
     state.initialServingTeam = previousState.initialServingTeam;
@@ -477,8 +519,44 @@ function displayStatistics() {
     const shotTypes = ['attack', 'attack2', 'block', 'ace', 
                       'errorServe', 'errorRecept', 'errorAttack', 'errorDouble', 'errorNetTouch'];
     
-    // Calculate all player stats
-    const stats = state.shots.reduce((acc, shot) => {
+    // Create main container for all stats tables
+    let allStatsHtml = '';
+    
+    // 1. Show stats for each completed set, plus current set
+    for (let setIndex = 0; setIndex <= state.currentSet; setIndex++) {
+        if (setIndex < FORMATS[state.gameFormat].TOTAL_SETS) {
+            // Only include sets that have been started
+            const setShots = state.shotsBySet[setIndex];
+            
+            // Skip if no shots in this set
+            if (setShots.length === 0 && setIndex !== state.currentSet) continue;
+            
+            // Calculate set statistics
+            const setStats = generateStatsFromShots(setShots, shotTypes);
+            
+            // Generate table for this set
+            const setTitle = `<h3>Set ${setIndex + 1} Stats</h3>`;
+            const setTable = generateStatsTable(setStats, shotTypes);
+            
+            // Add section for this set
+            allStatsHtml += `<div class="set-stats">${setTitle}${setTable}</div>`;
+        }
+    }
+    
+    // 2. Show summary table for the entire game
+    const gameStats = generateStatsFromShots(state.shots, shotTypes);
+    const gameTitle = '<h3>Game Summary</h3>';
+    const gameTable = generateStatsTable(gameStats, shotTypes);
+    allStatsHtml += `<div class="game-stats">${gameTitle}${gameTable}</div>`;
+    
+    // Update HTML
+    document.getElementById('shot-statistics').innerHTML = allStatsHtml;
+}
+
+// Helper function to generate stats from a list of shots
+function generateStatsFromShots(shots, shotTypes) {
+    // Calculate stats from the provided shots
+    const stats = shots.reduce((acc, shot) => {
         if (!acc[shot.team]) acc[shot.team] = {};
         if (!acc[shot.team][shot.method]) acc[shot.team][shot.method] = 0;
         acc[shot.team][shot.method]++;
@@ -492,14 +570,26 @@ function displayStatistics() {
     // Calculate team totals for each shot type
     shotTypes.forEach(method => {
         homeStats[method] = (stats['home1'] ? stats['home1'][method] || 0 : 0) + 
-                           (stats['home2'] ? stats['home2'][method] || 0 : 0);
+                          (stats['home2'] ? stats['home2'][method] || 0 : 0);
         
         awayStats[method] = (stats['away1'] ? stats['away1'][method] || 0 : 0) + 
-                           (stats['away2'] ? stats['away2'][method] || 0 : 0);
+                          (stats['away2'] ? stats['away2'][method] || 0 : 0);
     });
     
+    return {
+        stats,
+        homeStats,
+        awayStats
+    };
+}
+
+// Helper function to generate a statistics table from stats data
+function generateStatsTable(statsData, shotTypes) {
     // Get 4-letter abbreviations of player names
     const abbrevName = name => name.substring(0, 4);
+    
+    // Extract data
+    const { stats, homeStats, awayStats } = statsData;
     
     // Calculate column totals for percentages
     const getTotal = player => shotTypes.reduce((total, method) => {
@@ -521,7 +611,7 @@ function displayStatistics() {
     };
     
     // Generate the HTML table with abbreviated headers
-    let statsHtml = `
+    let tableHtml = `
         <table class="stats-table">
             <tr>
                 <th>Act</th>
@@ -559,7 +649,7 @@ function displayStatistics() {
         const away1Value = stats['away1'] ? stats['away1'][method] || 0 : 0;
         const away2Value = stats['away2'] ? stats['away2'][method] || 0 : 0;
         
-        statsHtml += `
+        tableHtml += `
             <tr>
                 <td>${displayName}</td>
                 <td>${formatCell(homeValue, homeTotalPoints)}</td>
@@ -572,7 +662,7 @@ function displayStatistics() {
     });
     
     // Add row for totals
-    statsHtml += `
+    tableHtml += `
         <tr class="total-row">
             <td><strong>Tot</strong></td>
             <td><strong>${homeTotalPoints}</strong></td>
@@ -584,7 +674,7 @@ function displayStatistics() {
         </tr>
     </table>`;
     
-    document.getElementById('shot-statistics').innerHTML = statsHtml;
+    return tableHtml;
 }
 
 // Action handlers
@@ -731,10 +821,12 @@ function endErrorPoint(errorType) {
         const statErrorType = errorType === 'Other' ? 'NetTouch' : errorType;
         
         // Add error to shot history with the team that made the error
-        state.shots.push({ team: errorTeam, method: 'error' + statErrorType });
+        const errorMethod = 'error' + statErrorType;
+        state.shots.push({ team: errorTeam, method: errorMethod });
+        state.shotsBySet[state.currentSet].push({ team: errorTeam, method: errorMethod });
         
         // Update player stats for the player who made the error
-        updatePlayerStats(errorTeam, 'error' + statErrorType);
+        updatePlayerStats(errorTeam, errorMethod);
         
         // Increment score for the team that gets the point
         if (scoringTeam === 'home1' || scoringTeam === 'home2') {

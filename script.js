@@ -1218,12 +1218,63 @@ function loadMatch(event) {
     if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            const matchData = JSON.parse(e.target.result);
-            Object.assign(state, matchData);
-            updateButtonNames();
-            updateUI();
-            // Ensure reset button text is consistent
-            document.getElementById('reset-button').innerText = 'Reset';
+            try {
+                const matchData = JSON.parse(e.target.result);
+
+                // Store current skill level before overwriting
+                const currentSkillLevel = state.skillLevel;
+
+                // Load all properties from saved state
+                Object.assign(state, matchData);
+
+                // Make sure all required intermediate mode properties exist
+                if (!state.currentRallyState) {
+                    state.currentRallyState = "Serve";
+                }
+
+                if (!state.rallyPath) {
+                    state.rallyPath = [];
+                }
+
+                if (!state.servingPlayerNames) {
+                    state.servingPlayerNames = [];
+                }
+
+                if (!state.receivingPlayerNames) {
+                    state.receivingPlayerNames = [];
+                }
+
+                // If this is an intermediate level game, initialize player arrays
+                if (state.skillLevel === 'intermediate') {
+                    setupIntermediateMode();
+                }
+
+                // Update UI elements
+                updateButtonNames();
+
+                // Set reset button text
+                document.getElementById('reset-button').innerText = 'Reset';
+
+                // Clear any existing rally container first
+                const existingRallyContainer = document.getElementById('rally-container');
+                if (existingRallyContainer) {
+                    existingRallyContainer.remove();
+                }
+
+                // Apply skill level settings to ensure the correct UI is shown
+                applySkillLevelSettings();
+
+                // Update UI based on loaded state
+                updateUI();
+
+                // Save the state to localStorage to ensure persistence
+                saveState();
+
+                console.log('Game loaded successfully!', state.skillLevel);
+            } catch (error) {
+                console.error('Error loading match data:', error);
+                alert('Error loading match data: ' + error.message);
+            }
         };
         reader.readAsText(file);
     }

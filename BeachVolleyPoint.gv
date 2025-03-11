@@ -1,0 +1,28 @@
+digraph BeachVolleyPoint {
+
+  // It is assumed that the Player1 or Player 2 are serving
+  Serve -> Point12 [label=Ace]
+  Serve -> Point12 [label=SkunkReceptionPlayer1]
+  Serve -> Point12 [label=SkunkReceptionPlayer2]
+  Serve -> Point34 [label=ServeError]
+  
+  Serve -> Reception [label=ReceivedByPlayer1]
+  Serve -> Reception [Label=ReceivedByPlayer2]
+
+  Reception -> Attack12 [label=AttackPlayer1]
+  Reception -> Attack12 [label=AttackPlayer2]
+
+  Attack12 -> Point12 [label=WinningAttack]
+  Attack12 -> Point34 [label=BlockPlayer3]
+  Attack12 -> Point34 [label=BlockPlayer4]
+  Attack12 -> Point34 [label=AttackError]
+  Attack12 -> Attack34 [label=DefByPlayer3]
+  Attack12 -> Attack34 [label=DefByPlayer4]
+  
+  Attack34 -> Point34 [label=WinningAttack]
+  Attack34 -> Point12 [label=BlockPlayer1]
+  Attack34 -> Point12 [label=BlockPlayer2]
+  Attack34 -> Point12 [label=AttackError]
+  Attack34 -> Attack12 [label=DefByPlayer1]
+  Attack34 -> Attack12 [label=DefByPlayer2]
+}

@@ -15,6 +15,46 @@ const BUTTON_CONFIG = {
     ]
 };
 
+// Graph structure for intermediate level flow
+const rallyGraph = {
+    Serve: {
+        transitions: [
+            { action: "Ace", nextState: "Point12" },
+            { action: "SkunkReceptionPlayer1", nextState: "Point12" },
+            { action: "SkunkReceptionPlayer2", nextState: "Point12" },
+            { action: "ServeError", nextState: "Point34" },
+            { action: "ReceivedByPlayer1", nextState: "Reception" },
+            { action: "ReceivedByPlayer2", nextState: "Reception" }
+        ]
+    },
+    Reception: {
+        transitions: [
+            { action: "AttackPlayer1", nextState: "Attack12" },
+            { action: "AttackPlayer2", nextState: "Attack12" }
+        ]
+    },
+    Attack12: {
+        transitions: [
+            { action: "WinningAttack", nextState: "Point12" },
+            { action: "BlockPlayer3", nextState: "Point34" },
+            { action: "BlockPlayer4", nextState: "Point34" },
+            { action: "AttackError", nextState: "Point34" },
+            { action: "DefByPlayer3", nextState: "Attack34" },
+            { action: "DefByPlayer4", nextState: "Attack34" }
+        ]
+    },
+    Attack34: {
+        transitions: [
+            { action: "WinningAttack", nextState: "Point34" },
+            { action: "BlockPlayer1", nextState: "Point12" },
+            { action: "BlockPlayer2", nextState: "Point12" },
+            { action: "AttackError", nextState: "Point12" },
+            { action: "DefByPlayer1", nextState: "Attack12" },
+            { action: "DefByPlayer2", nextState: "Attack12" }
+        ]
+    }
+};
+
 // Function to create buttons from configuration
 function createButtons(containerId, buttonConfig) {
     const container = document.getElementById(containerId);
@@ -70,7 +110,13 @@ const state = {
     history: [], // Array to store state history for undo functionality
     servingTeam: 'team1', // Track which team is currently serving (team1 or team2)
     initialServingTeam: 'team1', // Track which team started serving for this set
-    waitForServeSelection: false // Flag to indicate we're waiting for serve selection
+    waitForServeSelection: false, // Flag to indicate we're waiting for serve selection
+
+    // New properties for intermediate level
+    currentRallyState: "Serve", // Starting state for each rally
+    rallyPath: [], // Track the complete path of the rally
+    servingPlayerNames: [], // Will store names of players on serving team (1-2)
+    receivingPlayerNames: [] // Will store names of players on receiving team (3-4)
 };
 
 // Constants for different game formats
@@ -438,13 +484,82 @@ function savePlayerNames() {
     state.servingTeam = state.initialServingTeam; // Set current server to the initial choice
     
     // Get selected skill level
+    let newSkillLevel;
     if (document.getElementById('beginner-skill').checked) {
-        state.skillLevel = 'beginner';
+        newSkillLevel = 'beginner';
     } else if (document.getElementById('intermediate-skill').checked) {
-        state.skillLevel = 'intermediate';
+        newSkillLevel = 'intermediate';
     } else if (document.getElementById('advanced-skill').checked) {
-        state.skillLevel = 'advanced';
+        newSkillLevel = 'advanced';
     }
+    
+    // Check if skill level has changed
+    const skillLevelChanged = newSkillLevel !== state.skillLevel;
+    state.skillLevel = newSkillLevel;
+
+    // Hide modal
+    document.getElementById('player-names-modal').style.display = 'none';
+
+    // Now reset the state (only after names are confirmed)
+    resetState();
+    
+    // Update UI with new names
+    updateButtonNames();
+    
+    // Force clearing all UI elements before applying skill level settings
+    document.querySelector('.scoreboard').style.display = 'none';
+    document.querySelector('.button-group').style.display = 'none';
+    document.getElementById('point-endings').style.display = 'none';
+    document.getElementById('error-types').style.display = 'none';
+    document.getElementById('shot-statistics').style.display = 'none';
+    
+    // Remove any existing rally container
+    const existingRallyContainer = document.getElementById('rally-container');
+    if (existingRallyContainer) {
+        existingRallyContainer.remove();
+    }
+    
+    // Apply skill level settings to create the correct UI
+    applySkillLevelSettings();
+    
+    // Save state
+    saveState();
+    
+    // If skill level changed, reload the page
+    if (skillLevelChanged) {
+        location.reload();
+    }
+}
+
+function savePlayerNames() {
+    // Get values from inputs, use defaults if empty
+    state.playerNames.home1 = document.getElementById('home1-name').value.trim() || 'Home1';
+    state.playerNames.home2 = document.getElementById('home2-name').value.trim() || 'Home2';
+    state.playerNames.away1 = document.getElementById('away1-name').value.trim() || 'Away1';
+    state.playerNames.away2 = document.getElementById('away2-name').value.trim() || 'Away2';
+    
+    // Get selected game format
+    const format21Selected = document.getElementById('format-21').checked;
+    state.gameFormat = format21Selected ? '21-21-15' : '3-3-3';
+    
+    // Get selected serving team
+    const homeServeSelected = document.getElementById('home-serve').checked;
+    state.initialServingTeam = homeServeSelected ? 'team1' : 'team2';
+    state.servingTeam = state.initialServingTeam; // Set current server to the initial choice
+    
+    // Get selected skill level
+    let newSkillLevel;
+    if (document.getElementById('beginner-skill').checked) {
+        newSkillLevel = 'beginner';
+    } else if (document.getElementById('intermediate-skill').checked) {
+        newSkillLevel = 'intermediate';
+    } else if (document.getElementById('advanced-skill').checked) {
+        newSkillLevel = 'advanced';
+    }
+    
+    // Check if skill level has changed
+    const skillLevelChanged = newSkillLevel !== state.skillLevel;
+    state.skillLevel = newSkillLevel;
 
     // Hide modal
     document.getElementById('player-names-modal').style.display = 'none';
@@ -454,7 +569,6 @@ function savePlayerNames() {
     
     // Update UI with new names and reset state
     updateButtonNames();
-    displayStatistics();
     updateServingIndicator(); // Update the serving indicator display
     saveState();
     
@@ -472,127 +586,264 @@ function savePlayerNames() {
     // Apply any skill level specific changes
     applySkillLevelSettings();
     
+    // If skill level has changed, reload the page to ensure all event handlers are properly set up
+    if (skillLevelChanged) {
+        location.reload();
+        return;
+    }
+    
     updateUI();
 }
 
 // Function to apply settings based on skill level
 function applySkillLevelSettings() {
-    // For now, we're just implementing a placeholder
-    // In the future, this function will implement the behavior changes
-    // based on the selected skill level
-    
     console.log(`Applied skill level settings: ${state.skillLevel}`);
     
-    // The behavior will be implemented later as specified by the user
-    switch(state.skillLevel) {
-        case 'beginner':
-            // Default behavior - everything works as before
-            break;
-        case 'intermediate':
-            // Will be implemented later
-            break;
-        case 'advanced':
-            // Will be implemented later
-            break;
-    }
-}
-
-// New functions for undo functionality
-function saveStateToHistory() {
-    // Create a deep copy of the current state (excluding history array)
-
-    const stateCopy = JSON.parse(JSON.stringify({
-        team1Scores: state.team1Scores.slice(),
-        team2Scores: state.team2Scores.slice(),
-        team1SetWins: state.team1SetWins,
-        team2SetWins: state.team2SetWins,
-        currentSet: state.currentSet,
-        shots: state.shots.slice(),
-        shotsBySet: JSON.parse(JSON.stringify(state.shotsBySet)), // Include shotsBySet in history
-        playerStats: JSON.parse(JSON.stringify(state.playerStats)),
-        servingTeam: state.servingTeam,
-        initialServingTeam: state.initialServingTeam
-    }));
-
-    // Push the copy to history
-    state.history.push(stateCopy);
-    
-    // Limit history to last 50 states to prevent memory issues
-    if (state.history.length > 50) {
-        state.history.shift();
-    }
-
-    // Enable undo button when we add to history
-    const undoButton = document.getElementById('undo-button');
-    if (undoButton) {
-        undoButton.classList.remove('disabled');
-        undoButton.removeAttribute('disabled');
-    }
-}
-
-function undoLastAction() {
-    if (state.history.length === 0) {
-        return; // No history to restore
-    }
-    
-    // Get the previous state
-    const previousState = state.history.pop();
-    
-    // Restore previous values
-    state.team1Scores = previousState.team1Scores;
-    state.team2Scores = previousState.team2Scores;
-    state.team1SetWins = previousState.team1SetWins;
-    state.team2SetWins = previousState.team2SetWins;
-    state.currentSet = previousState.currentSet;
-    state.shots = previousState.shots;
-    state.shotsBySet = previousState.shotsBySet; // Restore shotsBySet from history
-    state.playerStats = previousState.playerStats;
-    state.servingTeam = previousState.servingTeam;
-    state.initialServingTeam = previousState.initialServingTeam;
-    
-    // Save the new state (with one less history item) to localStorage
-    saveState();
-    
-    // Reset UI visibility
-    document.querySelector('.scoreboard').style.display = 'flex';
-    document.querySelector('.button-group').style.display = 'flex';
-    document.getElementById('current-set').style.display = 'block';
-    document.getElementById('reset-button').style.display = 'block';
+    // Hide all UI elements first
+    document.querySelector('.scoreboard').style.display = 'none';
+    document.querySelector('.button-group').style.display = 'none';
     document.getElementById('point-endings').style.display = 'none';
     document.getElementById('error-types').style.display = 'none';
-    document.getElementById('shot-statistics').style.display = 'flex';
+    document.getElementById('shot-statistics').style.display = 'none';
     
-    // Update the display
+    // Make sure the current-set and match-status are visible
+    document.getElementById('current-set').style.display = 'block';
+    document.getElementById('match-status').style.display = 'block';
+    
+    // Always ensure the rally-container is removed first if it exists
+    const existingRallyContainer = document.getElementById('rally-container');
+    if (existingRallyContainer) {
+        existingRallyContainer.remove();
+    }
+    
+    // Initialize UI based on skill level
+    if (state.skillLevel === 'beginner') {
+        // Default behavior - standard UI
+        document.querySelector('.scoreboard').style.display = 'flex';
+        document.getElementById('shot-statistics').style.display = 'flex';
+    } else if (state.skillLevel === 'intermediate') {
+        // Setup for intermediate - initialize player name arrays
+        setupIntermediateMode();
+        
+        // Start with serve state UI
+        if (!isMatchOver()) {
+            showIntermediateScreen('Serve');
+        } else {
+            // Show match results if the match is over
+            document.getElementById('reset-button').style.display = 'block';
+            document.getElementById('save-button').style.display = 'block';
+        }
+    } else if (state.skillLevel === 'advanced') {
+        // Will be implemented later
+        document.querySelector('.scoreboard').style.display = 'flex';
+        document.getElementById('shot-statistics').style.display = 'flex';
+    }
+    
+    // Always ensure the reset button is visible regardless of skill level
+    document.getElementById('reset-button').style.display = 'block';
+    
+    // Update UI
     updateUI();
+}
+
+// Setup player arrays for intermediate mode
+function setupIntermediateMode() {
+    // Reset current rally state
+    state.currentRallyState = "Serve";
+    state.rallyPath = [];
     
-    // If this was the last state in history (back to start of match), disable undo
-    const undoButton = document.getElementById('undo-button');
-    if (state.history.length === 0) {
-        undoButton.classList.add('disabled');
-        undoButton.setAttribute('disabled', 'disabled');
+    // Initialize the arrays if they don't exist
+    if (!state.servingPlayerNames) {
+        state.servingPlayerNames = [];
+    }
+    if (!state.receivingPlayerNames) {
+        state.receivingPlayerNames = [];
+    }
+    
+    // Set up player names arrays based on serving team
+    if (state.servingTeam === 'team1') {
+        state.servingPlayerNames[0] = state.playerNames.home1;
+        state.servingPlayerNames[1] = state.playerNames.home2;
+        state.receivingPlayerNames[0] = state.playerNames.away1;
+        state.receivingPlayerNames[1] = state.playerNames.away2;
     } else {
-        undoButton.classList.remove('disabled');
-        undoButton.removeAttribute('disabled');
+        state.servingPlayerNames[0] = state.playerNames.away1;
+        state.servingPlayerNames[1] = state.playerNames.away2;
+        state.receivingPlayerNames[0] = state.playerNames.home1;
+        state.receivingPlayerNames[1] = state.playerNames.home2;
     }
 }
 
-// UI functions
-function updateUI() {
-    document.getElementById('team1-score').innerText = state.team1Scores[state.currentSet];
-    document.getElementById('team2-score').innerText = state.team2Scores[state.currentSet];
-    document.getElementById('current-set').innerText = `${state.team1SetWins}-${state.team2SetWins}`;
+// Function to create buttons for intermediate mode based on the current state
+function createIntermediateButtons(containerId, stateKey) {
+    const container = document.getElementById(containerId);
     
-    // Disable team buttons if waiting for serve selection
-    if (state.waitForServeSelection) {
-        document.querySelectorAll('.team button').forEach(button => {
-            button.disabled = true;
-        });
+    // Clear existing content
+    container.innerHTML = '';
+    
+    // Add state header
+    const stateHeader = document.createElement('div');
+    stateHeader.className = 'state-header';
+    stateHeader.textContent = stateKey;
+    container.appendChild(stateHeader);
+    
+    // Get transitions for current state
+    const transitions = rallyGraph[stateKey].transitions || [];
+    
+    // Create buttons for each transition
+    transitions.forEach(transition => {
+        const buttonElement = document.createElement('button');
+        buttonElement.className = 'rally-button';
+        
+        // Replace generic player labels with actual names
+        let actionLabel = transition.action;
+        
+        // Replace Player1, Player2 with serving team player names
+        actionLabel = actionLabel.replace('Player1', state.servingPlayerNames[0]);
+        actionLabel = actionLabel.replace('Player2', state.servingPlayerNames[1]);
+        
+        // Replace Player3, Player4 with receiving team player names
+        actionLabel = actionLabel.replace('Player3', state.receivingPlayerNames[0]);
+        actionLabel = actionLabel.replace('Player4', state.receivingPlayerNames[1]);
+        
+        buttonElement.textContent = actionLabel;
+        buttonElement.addEventListener('click', () => handleRallyTransition(transition));
+        container.appendChild(buttonElement);
+    });
+}
+
+// Handle a transition in the rally
+function handleRallyTransition(transition) {
+    // Save current state to history
+    saveStateToHistory();
+    
+    // Record this action in the rally path
+    state.rallyPath.push({
+        fromState: state.currentRallyState,
+        action: transition.action,
+        toState: transition.nextState
+    });
+    
+    // Check if this leads to a point
+    if (transition.nextState === 'Point12' || transition.nextState === 'Point34') {
+        // Award point to appropriate team
+        if (transition.nextState === 'Point12') {
+            // Point for serving team
+            if (state.servingTeam === 'team1') {
+                // Determine which player to attribute the point to based on the action
+                const playerIndex = getPlayerIndexFromAction(transition.action);
+                const team = playerIndex === 0 ? 'home1' : 'home2';
+                incrementScore(team, getActionMethod(transition.action));
+            } else {
+                const playerIndex = getPlayerIndexFromAction(transition.action);
+                const team = playerIndex === 0 ? 'away1' : 'away2';
+                incrementScore(team, getActionMethod(transition.action));
+            }
+        } else { // Point34
+            // Point for receiving team - the serving team changes
+            if (state.servingTeam === 'team1') {
+                const playerIndex = getPlayerIndexFromAction(transition.action);
+                const team = playerIndex === 0 ? 'away1' : 'away2';
+                incrementScore(team, getActionMethod(transition.action));
+            } else {
+                const playerIndex = getPlayerIndexFromAction(transition.action);
+                const team = playerIndex === 0 ? 'home1' : 'home2';
+                incrementScore(team, getActionMethod(transition.action));
+            }
+        }
+        
+        // Reset for next rally
+        state.currentRallyState = 'Serve';
+        state.rallyPath = [];
+        
+        // Update player arrays for next rally
+        setupIntermediateMode();
+        
+        // Show serve screen for next rally
+        showIntermediateScreen('Serve');
+    } else {
+        // Update current state and continue the rally
+        state.currentRallyState = transition.nextState;
+        showIntermediateScreen(transition.nextState);
+    }
+}
+
+// Helper function to get player index (0 or 1) from action
+function getPlayerIndexFromAction(action) {
+    // Check if action contains Player1 or Player3
+    if (action.includes('Player1') || action.includes('Player3')) {
+        return 0;
+    } 
+    // Check if action contains Player2 or Player4
+    else if (action.includes('Player2') || action.includes('Player4')) {
+        return 1;
+    }
+    // Default to player 0 if no specific player mentioned
+    return 0;
+}
+
+// Helper function to convert graph action to score method
+function getActionMethod(action) {
+    if (action.includes('Ace')) return 'ace';
+    if (action.includes('Block')) return 'block';
+    if (action.includes('WinningAttack')) return 'attack';
+    if (action.includes('Error')) return 'errorAttack';
+    if (action.includes('Skunk')) return 'errorRecept';
+    
+    // Default to attack for other actions
+    return 'attack';
+}
+
+// Function to display the intermediate screen based on current state
+function showIntermediateScreen(screenState) {
+    // Hide regular UI elements
+    document.querySelector('.scoreboard').style.display = 'none';
+    document.querySelector('.button-group').style.display = 'none';
+    document.getElementById('point-endings').style.display = 'none';
+    document.getElementById('error-types').style.display = 'none';
+    document.getElementById('shot-statistics').style.display = 'none';
+    
+    // Create or get rally container
+    let rallyContainer = document.getElementById('rally-container');
+    if (!rallyContainer) {
+        rallyContainer = document.createElement('div');
+        rallyContainer.id = 'rally-container';
+        rallyContainer.className = 'rally-container';
+        document.querySelector('.container').appendChild(rallyContainer);
     }
     
-    updateSetResults();
-    updateMatchStatus();
-    updateServingIndicator();
-    displayStatistics();
+    // Show rally container
+    rallyContainer.style.display = 'block';
+    
+    // Clear rally container
+    rallyContainer.innerHTML = '';
+    
+    // Add score display
+    const scoreDisplay = document.createElement('div');
+    scoreDisplay.className = 'set-scores';
+    scoreDisplay.textContent = `${state.team1Scores[state.currentSet]} - ${state.team2Scores[state.currentSet]}`;
+    rallyContainer.appendChild(scoreDisplay);
+    
+    // Add current set display
+    const setDisplay = document.createElement('div');
+    setDisplay.className = 'current-set';
+    setDisplay.textContent = `Set: ${state.team1SetWins}-${state.team2SetWins}`;
+    rallyContainer.appendChild(setDisplay);
+    
+    // Add serving team indicator
+    const servingIndicator = document.createElement('div');
+    servingIndicator.className = 'serving-team-indicator';
+    servingIndicator.textContent = `Serving: ${state.servingTeam === 'team1' ? 'Home' : 'Away'} Team`;
+    rallyContainer.appendChild(servingIndicator);
+    
+    // Add rally buttons container
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.id = 'rally-buttons';
+    buttonsContainer.className = 'rally-buttons';
+    rallyContainer.appendChild(buttonsContainer);
+    
+    // Create buttons for current state
+    createIntermediateButtons('rally-buttons', screenState);
 }
 
 // New function to update the serving indicator
@@ -620,6 +871,44 @@ function updateServingIndicator() {
     } else {
         team1Indicator.style.display = 'none';
         team2Indicator.style.display = 'block';
+    }
+}
+
+// UI functions
+function updateUI() {
+    // Update scores
+    document.getElementById('team1-score').innerText = state.team1Scores[state.currentSet];
+    document.getElementById('team2-score').innerText = state.team2Scores[state.currentSet];
+    document.getElementById('current-set').innerText = `${state.team1SetWins}-${state.team2SetWins}`;
+    
+    // Disable team buttons if waiting for serve selection
+    if (state.waitForServeSelection) {
+        document.querySelectorAll('.team button').forEach(button => {
+            button.disabled = true;
+        });
+    }
+    
+    updateSetResults();
+    updateMatchStatus();
+    updateServingIndicator();
+    
+    // Only show statistics in beginner mode
+    if (state.skillLevel === 'beginner') {
+        displayStatistics();
+    }
+    
+    // Handle intermediate mode UI after match is over
+    if (state.skillLevel === 'intermediate' && isMatchOver()) {
+        // Hide rally container if it exists
+        const rallyContainer = document.getElementById('rally-container');
+        if (rallyContainer) {
+            rallyContainer.style.display = 'none';
+        }
+        
+        // Show match status
+        document.getElementById('match-status').style.display = 'block';
+        document.getElementById('reset-button').style.display = 'block';
+        document.getElementById('save-button').style.display = 'block';
     }
 }
 
@@ -719,7 +1008,7 @@ function generateStatsFromShots(shots, shotTypes) {
     };
 }
 
-// Helper function to generate a statistics table from stats data
+//	Helper function to generate a statistics table from stats data
 function generateStatsTable(statsData, shotTypes) {
     // Get 4-letter abbreviations of player names
     const abbrevName = name => name.substring(0, 4);
@@ -1034,8 +1323,7 @@ function endErrorPoint(errorType) {
 function endPoint(method) {
     if (state.selectedTeam) {
         incrementScore(state.selectedTeam, method);
-        state.selectedTeam = null;
-        
+
         // Remove the temporary points display container
         const pointsContainer = document.getElementById('current-points-container');
         if (pointsContainer) {
@@ -1049,6 +1337,96 @@ function endPoint(method) {
         document.getElementById('undo-button').style.display = 'block'; // Show undo button again
         document.getElementById('point-endings').style.display = 'none';
         document.getElementById('shot-statistics').style.display = 'flex';
+    }
+}
+
+// New functions for undo functionality
+function saveStateToHistory() {
+    // Create a deep copy of the current state (excluding history array)
+    const stateCopy = JSON.parse(JSON.stringify({
+        team1Scores: state.team1Scores.slice(),
+        team2Scores: state.team2Scores.slice(),
+        team1SetWins: state.team1SetWins,
+        team2SetWins: state.team2SetWins,
+        currentSet: state.currentSet,
+        shots: state.shots.slice(),
+        shotsBySet: JSON.parse(JSON.stringify(state.shotsBySet)), // Include shotsBySet in history
+        playerStats: JSON.parse(JSON.stringify(state.playerStats)),
+        servingTeam: state.servingTeam,
+        initialServingTeam: state.initialServingTeam,
+        currentRallyState: state.currentRallyState,
+        rallyPath: JSON.parse(JSON.stringify(state.rallyPath))
+    }));
+    
+    // Push the copy to history
+    state.history.push(stateCopy);
+    
+    // Limit history to last 50 states to prevent memory issues
+    if (state.history.length > 50) {
+        state.history.shift();
+    }
+
+    // Enable undo button when we add to history
+    const undoButton = document.getElementById('undo-button');
+    if (undoButton) {
+        undoButton.classList.remove('disabled');
+        undoButton.removeAttribute('disabled');
+    }
+}
+
+function undoLastAction() {
+    if (state.history.length === 0) {
+        return; // No history to restore
+    }
+    
+    // Get the previous state
+    const previousState = state.history.pop();
+    
+    // Restore previous values
+    state.team1Scores = previousState.team1Scores;
+    state.team2Scores = previousState.team2Scores;
+    state.team1SetWins = previousState.team1SetWins;
+    state.team2SetWins = previousState.team2SetWins;
+    state.currentSet = previousState.currentSet;
+    state.shots = previousState.shots;
+    state.shotsBySet = previousState.shotsBySet; // Restore shotsBySet from history
+    state.playerStats = previousState.playerStats;
+    state.servingTeam = previousState.servingTeam;
+    state.initialServingTeam = previousState.initialServingTeam;
+    state.currentRallyState = previousState.currentRallyState || "Serve";
+    state.rallyPath = previousState.rallyPath || [];
+
+    // Save the new state (with one less history item) to localStorage
+    saveState();
+
+    // If we're in intermediate mode, update the UI accordingly
+    if (state.skillLevel === 'intermediate' && !isMatchOver()) {
+        // Update player name arrays
+        setupIntermediateMode();
+        // Show the appropriate screen
+        showIntermediateScreen(state.currentRallyState);
+    } else {
+        // Reset UI visibility for beginner mode
+        document.querySelector('.scoreboard').style.display = 'flex';
+        document.querySelector('.button-group').style.display = 'flex';
+        document.getElementById('current-set').style.display = 'block';
+        document.getElementById('reset-button').style.display = 'block';
+        document.getElementById('point-endings').style.display = 'none';
+        document.getElementById('error-types').style.display = 'none';
+        document.getElementById('shot-statistics').style.display = 'flex';
+    }
+
+    // Update the display
+    updateUI();
+
+    // If this was the last state in history (back to start of match), disable undo
+    const undoButton = document.getElementById('undo-button');
+    if (state.history.length === 0) {
+        undoButton.classList.add('disabled');
+        undoButton.setAttribute('disabled', 'disabled');
+    } else {
+        undoButton.classList.remove('disabled');
+        undoButton.removeAttribute('disabled');
     }
 }
 
@@ -1131,10 +1509,6 @@ window.onload = () => {
     }
     
     updateButtonNames();
-    updateUI();
-    
-    // Apply skill level settings
-    applySkillLevelSettings();
     
     // Set reset button text
     document.getElementById('reset-button').innerText = 'Reset';
@@ -1184,12 +1558,28 @@ window.onload = () => {
         undoButton.removeAttribute('disabled');
     }
 
-    // Make sure all elements are visible when needed
-    document.querySelector('.scoreboard').style.display = 'flex';
-    document.querySelector('.button-group').style.display = 'flex';
-    document.getElementById('current-set').style.display = 'block';
-    document.getElementById('reset-button').style.display = 'block';
-    document.getElementById('point-endings').style.display = 'none';
-    document.getElementById('error-types').style.display = 'none';
-    document.getElementById('shot-statistics').style.display = 'flex';
+    // Initialize UI visibility based on skill level BEFORE calling updateUI
+    if (state.skillLevel === 'intermediate') {
+        // Hide beginner UI elements
+        document.querySelector('.scoreboard').style.display = 'none';
+        document.querySelector('.button-group').style.display = 'none';
+        document.getElementById('point-endings').style.display = 'none';
+        document.getElementById('error-types').style.display = 'none';
+        document.getElementById('shot-statistics').style.display = 'none';
+    } else {
+        // Default beginner UI visibility
+        document.querySelector('.scoreboard').style.display = 'flex';
+        document.querySelector('.button-group').style.display = 'flex';
+        document.getElementById('current-set').style.display = 'block';
+        document.getElementById('reset-button').style.display = 'block';
+        document.getElementById('point-endings').style.display = 'none';
+        document.getElementById('error-types').style.display = 'none';
+        document.getElementById('shot-statistics').style.display = 'flex';
+    }
+    
+    // Apply skill level settings after setting initial visibility
+    applySkillLevelSettings();
+    
+    // Now call updateUI
+    updateUI();
 };

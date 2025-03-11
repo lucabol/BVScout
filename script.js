@@ -1,3 +1,46 @@
+// Button configuration for point endings and errors
+const BUTTON_CONFIG = {
+    pointEndings: [
+        { id: 'attack-button', label: 'Attack', method: 'attack' },
+        { id: 'attack2-button', label: 'Attack 2nd', method: 'attack2' },
+        { id: 'block-button', label: 'Block', method: 'block' },
+        { id: 'ace-button', label: 'Ace', method: 'ace' }
+    ],
+    errorTypes: [
+        { id: 'serve-error-button', label: 'Serve', method: 'errorServe' },
+        { id: 'recept-error-button', label: 'Recept', method: 'errorRecept' },
+        { id: 'attack-error-button', label: 'Attack', method: 'errorAttack' },
+        { id: 'double-error-button', label: 'Double', method: 'errorDouble' },
+        { id: 'other-error-button', label: 'Net Touch', method: 'errorNetTouch' }
+    ]
+};
+
+// Function to create buttons from configuration
+function createButtons(containerId, buttonConfig) {
+    const container = document.getElementById(containerId);
+    
+    // Clear existing buttons
+    container.innerHTML = '';
+    
+    // Create new buttons based on configuration
+    buttonConfig.forEach(button => {
+        const buttonElement = document.createElement('button');
+        buttonElement.id = button.id;
+        buttonElement.textContent = button.label;
+        
+        // Add event listener based on the container type
+        if (containerId === 'point-endings') {
+            buttonElement.addEventListener('click', () => endPoint(button.method));
+        } else if (containerId === 'error-types') {
+            // For error types, we need to pass the label without "error" prefix to maintain compatibility
+            const errorType = button.label === 'Net Touch' ? 'NetTouch' : button.label;
+            buttonElement.addEventListener('click', () => endErrorPoint(errorType));
+        }
+        
+        container.appendChild(buttonElement);
+    });
+}
+
 // Game state
 const state = {
     team1Scores: [0, 0, 0],
@@ -730,6 +773,9 @@ function chooseTeam(team) {
     document.getElementById('error-types').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
     
+    // Create buttons dynamically from configuration
+    createButtons('point-endings', BUTTON_CONFIG.pointEndings);
+    
     // Add points display when in point-endings screen
     const team1Score = state.team1Scores[state.currentSet];
     const team2Score = state.team2Scores[state.currentSet];
@@ -770,6 +816,9 @@ function chooseErrorType(player) {
     document.getElementById('point-endings').style.display = 'none';
     document.getElementById('error-types').style.display = 'flex';
     document.getElementById('shot-statistics').style.display = 'none';
+    
+    // Create buttons dynamically from configuration
+    createButtons('error-types', BUTTON_CONFIG.errorTypes);
     
     // Add points display when in error-types screen
     const team1Score = state.team1Scores[state.currentSet];
@@ -823,12 +872,17 @@ function endErrorPoint(errorType) {
             errorTeam = 'away2';
             scoringTeam = 'home2';
         }
+
+        // Find the method name from the errorType and button configuration
+        const errorButton = BUTTON_CONFIG.errorTypes.find(btn => 
+            btn.label === errorType || 
+            (btn.label === 'Net Touch' && errorType === 'NetTouch')
+        );
         
-        // Convert "Other" to "NetTouch" in the statistics
-        const statErrorType = errorType === 'Other' ? 'NetTouch' : errorType;
+        // Use the method from the configuration if found, otherwise fallback to the old method
+        const errorMethod = errorButton ? errorButton.method : 'error' + errorType;
         
         // Add error to shot history with the team that made the error
-        const errorMethod = 'error' + statErrorType;
         state.shots.push({ team: errorTeam, method: errorMethod });
         state.shotsBySet[state.currentSet].push({ team: errorTeam, method: errorMethod });
         
@@ -1005,19 +1059,6 @@ window.onload = () => {
     document.getElementById('home-err1-button').addEventListener('click', () => chooseErrorType('home-err1'));
     document.getElementById('home-err2-button').addEventListener('click', () => chooseErrorType('home-err2'));
     
-    // Event listeners for error types
-    document.getElementById('serve-error-button').addEventListener('click', () => endErrorPoint('Serve'));
-    document.getElementById('recept-error-button').addEventListener('click', () => endErrorPoint('Recept'));
-    document.getElementById('attack-error-button').addEventListener('click', () => endErrorPoint('Attack'));
-    document.getElementById('double-error-button').addEventListener('click', () => endErrorPoint('Double'));
-    document.getElementById('other-error-button').addEventListener('click', () => endErrorPoint('NetTouch'));
-    
-    // Event listeners for point endings
-    document.getElementById('attack-button').addEventListener('click', () => endPoint('attack'));
-    document.getElementById('attack2-button').addEventListener('click', () => endPoint('attack2'));
-    document.getElementById('block-button').addEventListener('click', () => endPoint('block'));
-    document.getElementById('ace-button').addEventListener('click', () => endPoint('ace'));
-    
     // Other event listeners
     document.getElementById('reset-button').addEventListener('click', resetMatch);
     document.getElementById('save-button').addEventListener('click', saveMatch);
@@ -1050,24 +1091,6 @@ window.onload = () => {
         undoButton.classList.remove('disabled');
         undoButton.removeAttribute('disabled');
     }
-    
-    // Add error handling for event listeners to detect missing elements
-    const allButtons = [
-        'home-one-button', 'home-two-button', 'away-one-button', 'away-two-button',
-        'away-err1-button', 'away-err2-button', 'home-err1-button', 'home-err2-button',
-        'serve-error-button', 'recept-error-button', 'attack-error-button', 'double-error-button', 'other-error-button',
-        'attack-button', 'attack2-button', 'block-button', 'ace-button',
-        'reset-button', 'save-button', 'load-button', 'load-file', 'undo-button',
-        'save-serve-button' // Added third set serve button
-    ];
-    
-    // Check if any buttons are missing
-    allButtons.forEach(id => {
-        const element = document.getElementById(id);
-        if (!element) {
-            console.error(`Button with ID '${id}' not found in the document.`);
-        }
-    });
 
     // Make sure all elements are visible when needed
     document.querySelector('.scoreboard').style.display = 'flex';

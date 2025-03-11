@@ -664,3 +664,32 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
     margin: 0;
     width: 100%;
 }
+
+/* Add styles for skill level checkboxes */
+.skill-level {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+
+.skill-options {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.skill-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.skill-option input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.skill-option label {
+    font-weight: bold;
+    cursor: pointer;
+}

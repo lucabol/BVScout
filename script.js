@@ -66,6 +66,7 @@ const state = {
         away2: 'Away2'
     },
     gameFormat: '3-3-3', // Default game format
+    skillLevel: 'beginner', // Default skill level
     history: [], // Array to store state history for undo functionality
     servingTeam: 'team1', // Track which team is currently serving (team1 or team2)
     initialServingTeam: 'team1', // Track which team started serving for this set
@@ -132,16 +133,19 @@ function incrementScore(team, method) {
     
     if (team === 'home1' || team === 'home2') {
         state.team1Scores[state.currentSet]++;
+
         scoringTeam = 'team1';
     } else if (team === 'away1' || team === 'away2') {
         state.team2Scores[state.currentSet]++;
         scoringTeam = 'team2';
+
     }
 
     // Update the serving team - whoever scores serves next
     state.servingTeam = scoringTeam;
 
     // Record shot for the current set AND the global shot array
+
     state.shots.push({ team, method });
     state.shotsBySet[state.currentSet].push({ team, method });
     
@@ -190,6 +194,12 @@ function loadState() {
     const savedGameFormat = localStorage.getItem('gameFormat');
     if (savedGameFormat && (savedGameFormat === '21-21-15' || savedGameFormat === '3-3-3')) {
         state.gameFormat = savedGameFormat;
+    }
+
+    // Load skill level preference
+    const savedSkillLevel = localStorage.getItem('skillLevel');
+    if (savedSkillLevel && (savedSkillLevel === 'beginner' || savedSkillLevel === 'intermediate' || savedSkillLevel === 'advanced')) {
+        state.skillLevel = savedSkillLevel;
     }
 
     // Load serving team information
@@ -272,6 +282,7 @@ function resetState() {
     const previousNames = {...state.playerNames}; // Store the current names
     const currentFormat = state.gameFormat; // Store the current game format
     const initialServingTeam = state.initialServingTeam; // Store selected serving team
+    const currentSkillLevel = state.skillLevel; // Store the current skill level
     
     Object.assign(state, {
         team1Scores: [0, 0, 0],
@@ -292,6 +303,7 @@ function resetState() {
         errorPlayer: null,
         playerNames: previousNames, // Restore the previous names
         gameFormat: currentFormat,   // Keep the selected game format
+        skillLevel: currentSkillLevel, // Keep the selected skill level
         servingTeam: initialServingTeam, // Set the current server to the initial choice
         initialServingTeam: initialServingTeam // Keep the selected initial server
     });
@@ -337,6 +349,45 @@ function showPlayerNamesModal() {
     } else {
         document.getElementById('away-serve').checked = true;
     }
+    
+    // Set the correct checkbox for skill level
+    document.getElementById('beginner-skill').checked = (state.skillLevel === 'beginner');
+    document.getElementById('intermediate-skill').checked = (state.skillLevel === 'intermediate');
+    document.getElementById('advanced-skill').checked = (state.skillLevel === 'advanced');
+}
+
+// Make skill level checkboxes mutually exclusive
+function setupSkillLevelCheckboxes() {
+    const beginnerCheckbox = document.getElementById('beginner-skill');
+    const intermediateCheckbox = document.getElementById('intermediate-skill');
+    const advancedCheckbox = document.getElementById('advanced-skill');
+    
+    // Function to make checkboxes mutually exclusive
+    function makeExclusive(selectedCheckbox, otherCheckboxes) {
+        if (selectedCheckbox.checked) {
+            otherCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        } else {
+            // If unchecking the only selected checkbox, revert to beginner
+            if (!otherCheckboxes.some(checkbox => checkbox.checked)) {
+                beginnerCheckbox.checked = true;
+            }
+        }
+    }
+    
+    // Add event listeners
+    beginnerCheckbox.addEventListener('change', () => {
+        makeExclusive(beginnerCheckbox, [intermediateCheckbox, advancedCheckbox]);
+    });
+    
+    intermediateCheckbox.addEventListener('change', () => {
+        makeExclusive(intermediateCheckbox, [beginnerCheckbox, advancedCheckbox]);
+    });
+    
+    advancedCheckbox.addEventListener('change', () => {
+        makeExclusive(advancedCheckbox, [beginnerCheckbox, intermediateCheckbox]);
+    });
 }
 
 // New function for showing the third set serve selection modal
@@ -385,6 +436,15 @@ function savePlayerNames() {
     const homeServeSelected = document.getElementById('home-serve').checked;
     state.initialServingTeam = homeServeSelected ? 'team1' : 'team2';
     state.servingTeam = state.initialServingTeam; // Set current server to the initial choice
+    
+    // Get selected skill level
+    if (document.getElementById('beginner-skill').checked) {
+        state.skillLevel = 'beginner';
+    } else if (document.getElementById('intermediate-skill').checked) {
+        state.skillLevel = 'intermediate';
+    } else if (document.getElementById('advanced-skill').checked) {
+        state.skillLevel = 'advanced';
+    }
 
     // Hide modal
     document.getElementById('player-names-modal').style.display = 'none';
@@ -409,12 +469,38 @@ function savePlayerNames() {
     document.getElementById('match-status').innerText = '';
     document.getElementById('reset-button').innerText = 'Reset';
     
+    // Apply any skill level specific changes
+    applySkillLevelSettings();
+    
     updateUI();
+}
+
+// Function to apply settings based on skill level
+function applySkillLevelSettings() {
+    // For now, we're just implementing a placeholder
+    // In the future, this function will implement the behavior changes
+    // based on the selected skill level
+    
+    console.log(`Applied skill level settings: ${state.skillLevel}`);
+    
+    // The behavior will be implemented later as specified by the user
+    switch(state.skillLevel) {
+        case 'beginner':
+            // Default behavior - everything works as before
+            break;
+        case 'intermediate':
+            // Will be implemented later
+            break;
+        case 'advanced':
+            // Will be implemented later
+            break;
+    }
 }
 
 // New functions for undo functionality
 function saveStateToHistory() {
     // Create a deep copy of the current state (excluding history array)
+
     const stateCopy = JSON.parse(JSON.stringify({
         team1Scores: state.team1Scores.slice(),
         team2Scores: state.team2Scores.slice(),
@@ -427,7 +513,7 @@ function saveStateToHistory() {
         servingTeam: state.servingTeam,
         initialServingTeam: state.initialServingTeam
     }));
-    
+
     // Push the copy to history
     state.history.push(stateCopy);
     
@@ -1025,6 +1111,9 @@ const addTitleAndInfo = () => {
 window.onload = () => {
     addTitleAndInfo();
     
+    // Setup skill level checkboxes to be mutually exclusive
+    setupSkillLevelCheckboxes();
+    
     // Create serving indicators for both teams
     const teams = document.querySelectorAll('.team');
     teams.forEach(team => {
@@ -1043,6 +1132,9 @@ window.onload = () => {
     
     updateButtonNames();
     updateUI();
+    
+    // Apply skill level settings
+    applySkillLevelSettings();
     
     // Set reset button text
     document.getElementById('reset-button').innerText = 'Reset';

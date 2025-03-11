@@ -531,70 +531,6 @@ function savePlayerNames() {
     }
 }
 
-function savePlayerNames() {
-    // Get values from inputs, use defaults if empty
-    state.playerNames.home1 = document.getElementById('home1-name').value.trim() || 'Home1';
-    state.playerNames.home2 = document.getElementById('home2-name').value.trim() || 'Home2';
-    state.playerNames.away1 = document.getElementById('away1-name').value.trim() || 'Away1';
-    state.playerNames.away2 = document.getElementById('away2-name').value.trim() || 'Away2';
-    
-    // Get selected game format
-    const format21Selected = document.getElementById('format-21').checked;
-    state.gameFormat = format21Selected ? '21-21-15' : '3-3-3';
-    
-    // Get selected serving team
-    const homeServeSelected = document.getElementById('home-serve').checked;
-    state.initialServingTeam = homeServeSelected ? 'team1' : 'team2';
-    state.servingTeam = state.initialServingTeam; // Set current server to the initial choice
-    
-    // Get selected skill level
-    let newSkillLevel;
-    if (document.getElementById('beginner-skill').checked) {
-        newSkillLevel = 'beginner';
-    } else if (document.getElementById('intermediate-skill').checked) {
-        newSkillLevel = 'intermediate';
-    } else if (document.getElementById('advanced-skill').checked) {
-        newSkillLevel = 'advanced';
-    }
-    
-    // Check if skill level has changed
-    const skillLevelChanged = newSkillLevel !== state.skillLevel;
-    state.skillLevel = newSkillLevel;
-
-    // Hide modal
-    document.getElementById('player-names-modal').style.display = 'none';
-
-    // Now reset the state (only after names are confirmed)
-    resetState();
-    
-    // Update UI with new names and reset state
-    updateButtonNames();
-    updateServingIndicator(); // Update the serving indicator display
-    saveState();
-    
-    // Reset UI elements
-    document.querySelector('.scoreboard').style.display = 'flex';
-    document.querySelector('.scoreboard').style.flexDirection = 'row';
-    document.getElementById('point-endings').style.display = 'none';
-    document.getElementById('error-types').style.display = 'none';
-    document.getElementById('shot-statistics').innerHTML = '';
-    document.getElementById('current-set').style.display = 'block';
-    document.getElementById('reset-button').style.display = 'block';
-    document.getElementById('match-status').innerText = '';
-    document.getElementById('reset-button').innerText = 'Reset';
-
-    // Apply any skill level specific changes
-    applySkillLevelSettings();
-
-    // If skill level has changed, reload the page to ensure all event handlers are properly set up
-    if (skillLevelChanged) {
-        location.reload();
-        return;
-    }
-
-    updateUI();
-}
-
 // Function to apply settings based on skill level
 function applySkillLevelSettings() {
     console.log(`Applied skill level settings: ${state.skillLevel}`);
@@ -735,10 +671,53 @@ function createIntermediateButtons(containerId, stateKey) {
                 .replace('Player4', state.servingPlayerNames[1]);
         }
 
+        // Format the action label into a proper phrase with spaces
+        actionLabel = formatActionLabel(actionLabel);
+
         buttonElement.textContent = actionLabel;
         buttonElement.addEventListener('click', () => handleRallyTransition(transition));
         container.appendChild(buttonElement);
     });
+}
+
+// Helper function to format action labels into readable phrases
+function formatActionLabel(actionLabel) {
+    // Handle specific action types with custom formatting
+    if (actionLabel.includes('SkunkReception')) {
+        return actionLabel.replace('SkunkReception', 'Skunk Reception ');
+    }
+    if (actionLabel.includes('ReceivedBy')) {
+        return actionLabel.replace('ReceivedBy', 'Received by ');
+    }
+    if (actionLabel.includes('AttackPlayer')) {
+        return actionLabel.replace('AttackPlayer', 'Attack by ');
+    }
+    if (actionLabel === 'WinningAttack') {
+        return 'Winning Attack';
+    }
+    if (actionLabel.includes('Attack') && !actionLabel.includes('Error')) {
+        // Handle any other Attack patterns (like AttackHome1, AttackAway1, etc)
+        return actionLabel.replace(/Attack(.+)/, 'Attack by $1');
+    }
+    if (actionLabel.includes('BlockPlayer')) {
+        return actionLabel.replace('BlockPlayer', 'Block by ');
+    }
+    if (actionLabel.includes('Block') && !actionLabel.includes('Player')) {
+        // Handle any other Block patterns (like BlockHome1, BlockAway1, etc)
+        return actionLabel.replace(/Block(.+)/, 'Block by $1');
+    }
+    if (actionLabel.includes('DefBy')) {
+        return actionLabel.replace('DefBy', 'Defense by ');
+    }
+    if (actionLabel === 'AttackError') {
+        return 'Attack Error';
+    }
+    if (actionLabel === 'ServeError') {
+        return 'Serve Error';
+    }
+    
+    // Default case - just return the original
+    return actionLabel;
 }
 
 // Handle a transition in the rally
@@ -1543,7 +1522,7 @@ function undoLastAction() {
     saveState();
 
     // If we're in intermediate mode, update the UI accordingly
-    if (state.skillLevel === 'intermediate' && !isMatchOver()) {
+    if (state.skillLevel === 'intermediate') {
         // Update player name arrays
         setupIntermediateMode();
         // Show the appropriate screen

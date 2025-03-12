@@ -1056,13 +1056,8 @@ function updateMatchOverUI() {
     document.querySelector('.scoreboard').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
     
-    // Hide all elements with 'indicator' in their ID
+    // Hide all elements with 'indicator' in their class name
     document.querySelectorAll('[class*="indicator"]').forEach(element => {
-        element.style.display = 'none';
-    });
-    
-    // Hide all elements with 'indicator' in their class name (for serving indicators)
-    document.querySelectorAll('.serving-indicator').forEach(element => {
         element.style.display = 'none';
     });
     
@@ -1072,38 +1067,21 @@ function updateMatchOverUI() {
         rallyContainer.style.display = 'none';
     }
     
-    // Create match summary HTML
+    // Create match summary HTML with compact styling
     const winner = state.team1SetWins > state.team2SetWins ? 'Home' : 'Away';
     const matchSummary = `
-        <div class="match-summary">
-            <h2>${winner} Team Wins!</h2>
-            <div class="final-score">
-                <div class="team-column">
-                    <h3>Home Team</h3>
-                    <div class="player-names">
-                        ${state.playerNames.home1}<br>
-                        ${state.playerNames.home2}
-                    </div>
-                </div>
-                <div class="sets-column">
-                    <h3>Sets</h3>
-                    <div class="set-scores">
-                        ${state.team1SetWins} - ${state.team2SetWins}
-                    </div>
-                </div>
-                <div class="team-column">
-                    <h3>Away Team</h3>
-                    <div class="player-names">
-                        ${state.playerNames.away1}<br>
-                        ${state.playerNames.away2}
-                    </div>
-                </div>
+        <div class="match-summary compact">
+            <div class="winner-display ${winner.toLowerCase()}-winner">
+                ${winner} Team Wins!
             </div>
-            <div class="set-details">
+            <div class="score-display">
+                <span class="final-sets">${state.team1SetWins}-${state.team2SetWins}</span>
+            </div>
+            <div class="set-details compact">
                 ${Array(state.currentSet).fill(0).map((_, i) => `
                     <div class="set-row">
-                        <span class="set-label">Set ${i + 1}:</span>
-                        <span class="set-score">${state.team1Scores[i]} - ${state.team2Scores[i]}</span>
+                        <span class="set-number">Set ${i + 1}</span>
+                        <span class="set-score">${state.team1Scores[i]}-${state.team2Scores[i]}</span>
                     </div>
                 `).join('')}
             </div>
@@ -1114,16 +1092,8 @@ function updateMatchOverUI() {
     document.getElementById('match-status').innerHTML = matchSummary;
     document.getElementById('match-status').style.display = 'block';
 
-    // Show all utility button groups
-    document.querySelectorAll('.button-group').forEach(group => {
-        group.style.display = 'flex';
-    });
-    
-    // If there's a utility container in the rally container, show that too
-    const utilityContainer = document.querySelector('.utility-container');
-    if (utilityContainer) {
-        utilityContainer.style.display = 'flex';
-    }
+    // Show utility buttons
+    document.querySelector('.button-group').style.display = 'flex';
 }
 
 // New function specifically for beginner mode UI

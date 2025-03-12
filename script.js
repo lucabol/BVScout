@@ -878,6 +878,7 @@ function showIntermediateScreen(screenState) {
     document.getElementById('error-types').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
     document.getElementById('match-status').style.display = 'none'; // Hide match status
+    document.getElementById('set-results').style.display = 'none'; // Hide set results
     
     // Create or get rally container
     let rallyContainer = document.getElementById('rally-container');
@@ -1100,24 +1101,64 @@ function updateMatchOverUI() {
         element.style.display = 'none';
     });
     
-    // Get rally container
+    // Hide the rally container completely
     const rallyContainer = document.getElementById('rally-container');
     if (rallyContainer) {
-        // Hide only the rally buttons, not the entire container
-        const rallyButtons = rallyContainer.querySelector('#rally-buttons');
-        if (rallyButtons) {
-            rallyButtons.style.display = 'none';
-        }
-        
-        // Keep the utility container visible
-        const utilityContainer = rallyContainer.querySelector('.utility-container');
-        if (utilityContainer) {
-            utilityContainer.style.display = 'flex';
-        }
+        rallyContainer.style.display = 'none';
     }
     
-    // Show match end elements
+    // Create match summary HTML
+    const winner = state.team1SetWins > state.team2SetWins ? 'Home' : 'Away';
+    const matchSummary = `
+        <div class="match-summary">
+            <h2>${winner} Team Wins!</h2>
+            <div class="final-score">
+                <div class="team-column">
+                    <h3>Home Team</h3>
+                    <div class="player-names">
+                        ${state.playerNames.home1}<br>
+                        ${state.playerNames.home2}
+                    </div>
+                </div>
+                <div class="sets-column">
+                    <h3>Sets</h3>
+                    <div class="set-scores">
+                        ${state.team1SetWins} - ${state.team2SetWins}
+                    </div>
+                </div>
+                <div class="team-column">
+                    <h3>Away Team</h3>
+                    <div class="player-names">
+                        ${state.playerNames.away1}<br>
+                        ${state.playerNames.away2}
+                    </div>
+                </div>
+            </div>
+            <div class="set-details">
+                ${Array(state.currentSet).fill(0).map((_, i) => `
+                    <div class="set-row">
+                        <span class="set-label">Set ${i + 1}:</span>
+                        <span class="set-score">${state.team1Scores[i]} - ${state.team2Scores[i]}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    // Show match end elements with the summary
+    document.getElementById('match-status').innerHTML = matchSummary;
     document.getElementById('match-status').style.display = 'block';
+
+    // Show all utility button groups
+    document.querySelectorAll('.button-group').forEach(group => {
+        group.style.display = 'flex';
+    });
+    
+    // If there's a utility container in the rally container, show that too
+    const utilityContainer = document.querySelector('.utility-container');
+    if (utilityContainer) {
+        utilityContainer.style.display = 'flex';
+    }
 }
 
 // New function specifically for beginner mode UI
@@ -1154,6 +1195,7 @@ function updateIntermediateUI() {
     document.querySelector('.scoreboard').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
     document.getElementById('current-set').style.display = 'none';
+    document.getElementById('set-results').style.display = 'none'; // Hide set results
     
     // Hide all utility button groups except those in rally container
     const buttonGroups = document.querySelectorAll('.button-group');

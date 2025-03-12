@@ -897,4 +897,90 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
     font-weight: bold;
 }
 
+/* Add styles for match summary */
+.match-summary {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px auto;
+    max-width: 600px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.match-summary h2 {
+    text-align: center;
+    margin: 0 0 20px 0;
+    font-size: 28px;
+    color: #ffffff;
+}
+
+.final-score {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #222;
+    border-radius: 8px;
+}
+
+.team-column {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+}
+
+.sets-column {
+    flex: 0.5;
+    text-align: center;
+    padding: 10px;
+    margin: 0 20px;
+    background-color: #333;
+    border-radius: 5px;
+}
+
+.team-column h3, .sets-column h3 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #999;
+}
+
+.player-names {
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.set-scores {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.set-details {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #222;
+    border-radius: 8px;
+}
+
+.set-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 20px;
+    border-bottom: 1px solid #333;
+}
+
+.set-row:last-child {
+    border-bottom: none;
+}
+
+.set-label {
+    font-weight: bold;
+    color: #999;
+}
+
+.set-score {
+    font-size: 18px;
+}
+
 /* Add this at the end of the file to preserve all existing styles */

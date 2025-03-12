@@ -750,4 +750,42 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
     background-color: var(--button-color-hover);
 }
 
+/* Add styles for improved score indicators with labels */
+.score-indicator {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.score-label {
+    font-weight: bold;
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+.score-value {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+/* Utility container styling for intermediate mode */
+.utility-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    padding: 10px 0;
+    background-color: var(--background-dark);
+    border-radius: 5px;
+}
+
+/* Make sure utility buttons in intermediate mode match the original style */
+.utility-container button {
+    width: var(--utility-button-width);
+    height: var(--utility-button-height);
+    margin: 0 2px;
+}
+
 /* Add this at the end of the file to preserve all existing styles */

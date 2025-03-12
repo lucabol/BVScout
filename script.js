@@ -542,8 +542,8 @@ function applySkillLevelSettings() {
     document.getElementById('error-types').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
     
-    // Make sure the current-set and match-status are visible
-    document.getElementById('current-set').style.display = 'block';
+    // Make sure the match-status is visible, but hide current-set
+    document.getElementById('current-set').style.display = 'none';
     document.getElementById('match-status').style.display = 'block';
     
     // Always ensure the rally-container is removed first if it exists
@@ -557,6 +557,8 @@ function applySkillLevelSettings() {
         // Default behavior - standard UI
         document.querySelector('.scoreboard').style.display = 'flex';
         document.getElementById('shot-statistics').style.display = 'flex';
+        document.getElementById('current-set').style.display = 'block'; // Show current-set in beginner mode
+        document.querySelector('.button-group').style.display = 'flex'; // Show utility buttons in beginner mode
     } else if (state.skillLevel === 'intermediate') {
         // Setup for intermediate - initialize player name arrays
         setupIntermediateMode();
@@ -566,17 +568,15 @@ function applySkillLevelSettings() {
             showIntermediateScreen('Serve');
         } else {
             // Show match results if the match is over
-            document.getElementById('reset-button').style.display = 'block';
-            document.getElementById('save-button').style.display = 'block';
+            document.querySelector('.button-group').style.display = 'flex'; // Show utility buttons when match is over
         }
     } else if (state.skillLevel === 'advanced') {
         // Will be implemented later
         document.querySelector('.scoreboard').style.display = 'flex';
         document.getElementById('shot-statistics').style.display = 'flex';
+        document.getElementById('current-set').style.display = 'block'; // Show current-set in advanced mode
+        document.querySelector('.button-group').style.display = 'flex'; // Show utility buttons in advanced mode
     }
-    
-    // Always ensure the reset button is visible regardless of skill level
-    document.getElementById('reset-button').style.display = 'block';
     
     // Update UI
     updateUI();
@@ -861,6 +861,7 @@ function showIntermediateScreen(screenState) {
     document.getElementById('point-endings').style.display = 'none';
     document.getElementById('error-types').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
+    document.getElementById('match-status').style.display = 'none'; // Hide match status
     
     // Create or get rally container
     let rallyContainer = document.getElementById('rally-container');
@@ -877,16 +878,16 @@ function showIntermediateScreen(screenState) {
     // Clear rally container
     rallyContainer.innerHTML = '';
 
-    // Add score display
+    // Add score display with clear label
     const scoreDisplay = document.createElement('div');
-    scoreDisplay.className = 'set-scores';
-    scoreDisplay.textContent = `${state.team1Scores[state.currentSet]} - ${state.team2Scores[state.currentSet]}`;
+    scoreDisplay.className = 'set-scores score-indicator';
+    scoreDisplay.innerHTML = `<span class="score-label">Current Points:</span> <span class="score-value">${state.team1Scores[state.currentSet]} - ${state.team2Scores[state.currentSet]}</span>`;
     rallyContainer.appendChild(scoreDisplay);
     
-    // Add current set display
+    // Add current set display with clear label
     const setDisplay = document.createElement('div');
-    setDisplay.className = 'current-set';
-    setDisplay.textContent = `Set: ${state.team1SetWins}-${state.team2SetWins}`;
+    setDisplay.className = 'current-set score-indicator';
+    setDisplay.innerHTML = `<span class="score-label">Sets Won:</span> <span class="score-value">${state.team1SetWins}-${state.team2SetWins}</span>`;
     rallyContainer.appendChild(setDisplay);
     
     // Add serving team indicator
@@ -903,6 +904,50 @@ function showIntermediateScreen(screenState) {
     
     // Create buttons for current state
     createIntermediateButtons('rally-buttons', screenState);
+    
+    // Create utility buttons container
+    const utilityContainer = document.createElement('div');
+    utilityContainer.className = 'button-group utility-container';
+    
+    // Clone the utility buttons from the original container
+    const resetButton = document.createElement('button');
+    resetButton.id = 'reset-button-clone';
+    resetButton.className = 'utility-button';
+    resetButton.textContent = 'Reset';
+    resetButton.addEventListener('click', resetMatch);
+    
+    const saveButton = document.createElement('button');
+    saveButton.id = 'save-button-clone';
+    saveButton.className = 'utility-button';
+    saveButton.textContent = 'Save';
+    saveButton.addEventListener('click', saveMatch);
+    
+    const loadButton = document.createElement('button');
+    loadButton.id = 'load-button-clone';
+    loadButton.className = 'utility-button';
+    loadButton.textContent = 'Load';
+    loadButton.addEventListener('click', () => document.getElementById('load-file').click());
+    
+    const undoButton = document.createElement('button');
+    undoButton.id = 'undo-button-clone';
+    undoButton.className = 'utility-button';
+    undoButton.textContent = 'Undo';
+    undoButton.addEventListener('click', undoLastAction);
+    
+    // Disable undo button if no history
+    if (!state.history || state.history.length === 0) {
+        undoButton.classList.add('disabled');
+        undoButton.setAttribute('disabled', 'disabled');
+    }
+    
+    // Add buttons to utility container
+    utilityContainer.appendChild(resetButton);
+    utilityContainer.appendChild(saveButton);
+    utilityContainer.appendChild(loadButton);
+    utilityContainer.appendChild(undoButton);
+    
+    // Add utility container to rally container
+    rallyContainer.appendChild(utilityContainer);
 }
 
 // New function to update the serving indicator
@@ -956,6 +1001,15 @@ function updateUI() {
         // Ensure scoreboard is hidden in intermediate mode
         document.querySelector('.scoreboard').style.display = 'none';
         document.getElementById('shot-statistics').style.display = 'none';
+        
+        // Hide the original utility buttons (the duplicated ones)
+        const buttonGroups = document.querySelectorAll('.button-group');
+        buttonGroups.forEach(group => {
+            if (!group.classList.contains('utility-container')) {
+                group.style.display = 'none';
+            }
+        });
+        
         // Show intermediate screen if not already shown
         if (!document.getElementById('rally-container')) {
             showIntermediateScreen(state.currentRallyState);
@@ -964,6 +1018,10 @@ function updateUI() {
         // Show beginner mode UI
         document.querySelector('.scoreboard').style.display = 'flex';
         document.getElementById('shot-statistics').style.display = 'flex';
+        
+        // Show original utility buttons in beginner mode
+        document.querySelector('.button-group').style.display = 'flex';
+        
         displayStatistics();
     }
 

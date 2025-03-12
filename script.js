@@ -855,6 +855,12 @@ function getActionMethod(action) {
 
 // Function to display the intermediate screen based on current state
 function showIntermediateScreen(screenState) {
+    // If match is over, use the common match over UI and don't show rally screen
+    if (isMatchOver()) {
+        updateMatchOverUI();
+        return;
+    }
+
     // Hide regular UI elements
     document.querySelector('.scoreboard').style.display = 'none';
     document.querySelector('.button-group').style.display = 'none';
@@ -1016,16 +1022,34 @@ function updateMatchOverUI() {
     document.querySelector('.scoreboard').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
     
-    // Remove rally container if it exists
+    // Hide all elements with 'indicator' in their ID
+    document.querySelectorAll('[class*="indicator"]').forEach(element => {
+        element.style.display = 'none';
+    });
+    
+    // Hide all elements with 'indicator' in their class name (for serving indicators)
+    document.querySelectorAll('.serving-indicator').forEach(element => {
+        element.style.display = 'none';
+    });
+    
+    // Get rally container
     const rallyContainer = document.getElementById('rally-container');
     if (rallyContainer) {
-        rallyContainer.style.display = 'none';
+        // Hide only the rally buttons, not the entire container
+        const rallyButtons = rallyContainer.querySelector('#rally-buttons');
+        if (rallyButtons) {
+            rallyButtons.style.display = 'none';
+        }
+        
+        // Keep the utility container visible
+        const utilityContainer = rallyContainer.querySelector('.utility-container');
+        if (utilityContainer) {
+            utilityContainer.style.display = 'flex';
+        }
     }
     
     // Show match end elements
     document.getElementById('match-status').style.display = 'block';
-    document.getElementById('reset-button').style.display = 'block';
-    document.getElementById('save-button').style.display = 'block';
 }
 
 // New function specifically for beginner mode UI
@@ -1050,8 +1074,14 @@ function updateBeginnerUI() {
     displayStatistics();
 }
 
-// New function specifically for intermediate mode UI
+// Function specifically for intermediate mode UI
 function updateIntermediateUI() {
+    // If match is over, use the common match over UI
+    if (isMatchOver()) {
+        updateMatchOverUI();
+        return;
+    }
+
     // Hide all beginner UI elements
     document.querySelector('.scoreboard').style.display = 'none';
     document.getElementById('shot-statistics').style.display = 'none';
@@ -1090,7 +1120,6 @@ function updateMatchStatus() {
         document.getElementById('reset-button').innerText = 'Reset';
         document.querySelector('.scoreboard').style.display = 'none';
         document.getElementById('save-button').style.display = 'block';
-        document.querySelectorAll('.team').forEach(team => team.style.display = 'none');
     } else {
         document.querySelector('.scoreboard').style.display = 'flex';
         document.querySelectorAll('.team').forEach(team => team.style.display = 'block');

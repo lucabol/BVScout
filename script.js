@@ -462,6 +462,16 @@ function saveServeSelection() {
         button.disabled = false;
     });
     
+    // Setup intermediate mode to update player arrays based on new serving team
+    if (state.skillLevel === 'intermediate') {
+        setupIntermediateMode();
+        
+        // Also update the intermediate UI to show the new serving team correctly
+        if (!isMatchOver()) {
+            showIntermediateScreen('Serve');
+        }
+    }
+    
     // Update UI to reflect the new serving team
     updateServingIndicator();
     saveState();
@@ -884,23 +894,81 @@ function showIntermediateScreen(screenState) {
     // Clear rally container
     rallyContainer.innerHTML = '';
 
-    // Add score display with clear label
-    const scoreDisplay = document.createElement('div');
-    scoreDisplay.className = 'set-scores score-indicator';
-    scoreDisplay.innerHTML = `<span class="score-label">Current Points:</span> <span class="score-value">${state.team1Scores[state.currentSet]} - ${state.team2Scores[state.currentSet]}</span>`;
-    rallyContainer.appendChild(scoreDisplay);
+    // Create a modern scoreboard container
+    const scoreboardContainer = document.createElement('div');
+    scoreboardContainer.className = 'intermediate-scoreboard';
     
-    // Add current set display with clear label
-    const setDisplay = document.createElement('div');
-    setDisplay.className = 'current-set score-indicator';
-    setDisplay.innerHTML = `<span class="score-label">Sets Won:</span> <span class="score-value">${state.team1SetWins}-${state.team2SetWins}</span>`;
-    rallyContainer.appendChild(setDisplay);
+    // Create team name display with Home/Away labels
+    const teamNamesContainer = document.createElement('div');
+    teamNamesContainer.className = 'team-names-container';
     
-    // Add serving team indicator
-    const servingIndicator = document.createElement('div');
-    servingIndicator.className = 'serving-team-indicator';
-    servingIndicator.textContent = `Serving: ${state.servingTeam === 'team1' ? 'Home' : 'Away'} Team`;
-    rallyContainer.appendChild(servingIndicator);
+    // Add Home team label/name
+    const homeTeamLabel = document.createElement('div');
+    homeTeamLabel.className = 'team-name home-team';
+    homeTeamLabel.innerHTML = state.servingTeam === 'team1' ? 
+        `<div class="serving-dot"></div><span>Home</span>` : 
+        `<span>Home</span>`;
+    
+    // Add Away team label/name
+    const awayTeamLabel = document.createElement('div');
+    awayTeamLabel.className = 'team-name away-team';
+    awayTeamLabel.innerHTML = state.servingTeam === 'team2' ? 
+        `<div class="serving-dot"></div><span>Away</span>` : 
+        `<span>Away</span>`;
+    
+    // Add points container
+    const pointsContainer = document.createElement('div');
+    pointsContainer.className = 'points-container';
+    
+    // Add Home team points
+    const homePoints = document.createElement('div');
+    homePoints.className = 'team-points home-points';
+    homePoints.textContent = state.team1Scores[state.currentSet];
+    
+    // Add separator
+    const pointsSeparator = document.createElement('div');
+    pointsSeparator.className = 'points-separator';
+    pointsSeparator.textContent = '-';
+    
+    // Add Away team points
+    const awayPoints = document.createElement('div');
+    awayPoints.className = 'team-points away-points';
+    awayPoints.textContent = state.team2Scores[state.currentSet];
+    
+    // Add sets container
+    const setsContainer = document.createElement('div');
+    setsContainer.className = 'sets-container';
+    
+    // Add sets label
+    const setsLabel = document.createElement('div');
+    setsLabel.className = 'sets-label';
+    setsLabel.textContent = 'Sets:';
+    
+    // Add sets score
+    const setsScore = document.createElement('div');
+    setsScore.className = 'sets-score';
+    setsScore.textContent = `${state.team1SetWins} - ${state.team2SetWins}`;
+    
+    // Assemble team names container
+    teamNamesContainer.appendChild(homeTeamLabel);
+    teamNamesContainer.appendChild(awayTeamLabel);
+    
+    // Assemble points container
+    pointsContainer.appendChild(homePoints);
+    pointsContainer.appendChild(pointsSeparator);
+    pointsContainer.appendChild(awayPoints);
+    
+    // Assemble sets container
+    setsContainer.appendChild(setsLabel);
+    setsContainer.appendChild(setsScore);
+    
+    // Assemble scoreboard
+    scoreboardContainer.appendChild(teamNamesContainer);
+    scoreboardContainer.appendChild(pointsContainer);
+    scoreboardContainer.appendChild(setsContainer);
+    
+    // Add completed scoreboard to rally container
+    rallyContainer.appendChild(scoreboardContainer);
     
     // Add rally buttons container
     const buttonsContainer = document.createElement('div');

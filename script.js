@@ -29,28 +29,28 @@ const rallyGraph = {
     },
     Reception: {
         transitions: [
-            { action: "AttackPlayer1", nextState: "Attack12" },
-            { action: "AttackPlayer2", nextState: "Attack12" }
+            { action: "AttackPlayer1", nextState: "Attack by Receiving Team" },
+            { action: "AttackPlayer2", nextState: "Attack by Receiving Team" }
         ]
     },
-    Attack12: {
+    "Attack by Receiving Team": {
         transitions: [
             { action: "WinningAttack", nextState: "Point34" },  // Receiving team scores (Point34)
             { action: "BlockPlayer3", nextState: "Point12" },   // Serving team scores (Point12)
             { action: "BlockPlayer4", nextState: "Point12" },   // Serving team scores (Point12)
             { action: "AttackError", nextState: "Point12" },    // Serving team scores (Point12)
-            { action: "DefByPlayer3", nextState: "Attack34" },
-            { action: "DefByPlayer4", nextState: "Attack34" }
+            { action: "DefByPlayer3", nextState: "Attack by Serving Team" },
+            { action: "DefByPlayer4", nextState: "Attack by Serving Team" }
         ]
     },
-    Attack34: {
+    "Attack by Serving Team": {
         transitions: [
             { action: "WinningAttack", nextState: "Point12" },  // Serving team scores (Point12)
             { action: "BlockPlayer1", nextState: "Point34" },   // Receiving team scores (Point34)
             { action: "BlockPlayer2", nextState: "Point34" },   // Receiving team scores (Point34)
             { action: "AttackError", nextState: "Point34" },    // Receiving team scores (Point34)
-            { action: "DefByPlayer1", nextState: "Attack12" },
-            { action: "DefByPlayer2", nextState: "Attack12" }
+            { action: "DefByPlayer1", nextState: "Attack by Receiving Team" },
+            { action: "DefByPlayer2", nextState: "Attack by Receiving Team" }
         ]
     }
 };
@@ -661,19 +661,8 @@ function createIntermediateButtons(containerId, stateKey) {
             actionLabel = actionLabel
                 .replace('Player1', state.receivingPlayerNames[0])
                 .replace('Player2', state.receivingPlayerNames[1]);
-        } else if (stateKey === 'Attack12') {
-            // In Attack12, receiving team is attacking
-            // Player1/2 are receiving team (attacking)
-            // Player3/4 are serving team (defending)
-            actionLabel = actionLabel
-                .replace('Player1', state.receivingPlayerNames[0])
-                .replace('Player2', state.receivingPlayerNames[1])
-                .replace('Player3', state.servingPlayerNames[0])
-                .replace('Player4', state.servingPlayerNames[1]);
-        } else if (stateKey === 'Attack34') {
-            // In Attack34, serving team is attacking
-            // Player1/2 are receiving team (defending)
-            // Player3/4 are serving team (attacking)
+        } else if (stateKey === 'Attack by Receiving Team' || stateKey === 'Attack by Serving Team') {
+            // Replace all player references with actual names
             actionLabel = actionLabel
                 .replace('Player1', state.receivingPlayerNames[0])
                 .replace('Player2', state.receivingPlayerNames[1])
@@ -769,8 +758,8 @@ function handleRallyTransition(transition) {
                     incrementScore(team, getActionMethod(transition.action));
                 }
             }
-        } else if (state.currentRallyState === 'Attack12') {
-            // In Attack12 state (receiving team attacking)
+        } else if (state.currentRallyState === 'Attack by Receiving Team') {
+            // In Attack by Receiving Team state (receiving team attacking)
             if (transition.nextState === 'Point34') {
                 // Receiving team scores (WinningAttack)
                 if (state.servingTeam === 'team1') {
@@ -794,8 +783,8 @@ function handleRallyTransition(transition) {
                     incrementScore(team, getActionMethod(transition.action));
                 }
             }
-        } else if (state.currentRallyState === 'Attack34') {
-            // In Attack34 state (serving team attacking)
+        } else if (state.currentRallyState === 'Attack by Serving Team') {
+            // In Attack by Serving Team state (serving team attacking)
             if (transition.nextState === 'Point12') {
                 // Serving team scores (WinningAttack)
                 if (state.servingTeam === 'team1') {

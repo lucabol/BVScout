@@ -980,7 +980,7 @@ function updateServingIndicator() {
 
 // UI functions
 function updateUI() {
-    // Update scores
+    // Common updates for all skill levels - shared score tracking
     document.getElementById('team1-score').innerText = state.team1Scores[state.currentSet];
     document.getElementById('team2-score').innerText = state.team2Scores[state.currentSet];
     document.getElementById('current-set').innerText = `${state.team1SetWins}-${state.team2SetWins}`;
@@ -996,48 +996,82 @@ function updateUI() {
     updateMatchStatus();
     updateServingIndicator();
     
-    // Handle UI visibility based on skill level
-    if (state.skillLevel === 'intermediate' && !isMatchOver()) {
-        // Ensure scoreboard is hidden in intermediate mode
-        document.querySelector('.scoreboard').style.display = 'none';
-        document.getElementById('shot-statistics').style.display = 'none';
-        
-        // Hide the original utility buttons (the duplicated ones)
-        const buttonGroups = document.querySelectorAll('.button-group');
-        buttonGroups.forEach(group => {
-            if (!group.classList.contains('utility-container')) {
-                group.style.display = 'none';
-            }
-        });
-        
-        // Show intermediate screen if not already shown
-        if (!document.getElementById('rally-container')) {
-            showIntermediateScreen(state.currentRallyState);
-        }
-    } else if (state.skillLevel === 'beginner') {
-        // Show beginner mode UI
-        document.querySelector('.scoreboard').style.display = 'flex';
-        document.getElementById('shot-statistics').style.display = 'flex';
-        
-        // Show original utility buttons in beginner mode
-        document.querySelector('.button-group').style.display = 'flex';
-        
-        displayStatistics();
-    }
-
-    // Handle match over state for all skill levels
+    // Handle UI visibility based on skill level with completely separate paths
     if (isMatchOver()) {
-        // Hide game UI elements
-        document.querySelector('.scoreboard').style.display = 'none';
-        const rallyContainer = document.getElementById('rally-container');
-        if (rallyContainer) {
-            rallyContainer.style.display = 'none';
+        // Match over state is handled the same way for all skill levels
+        updateMatchOverUI();
+    } else if (state.skillLevel === 'intermediate') {
+        updateIntermediateUI();
+    } else if (state.skillLevel === 'beginner') {
+        updateBeginnerUI();
+    } else if (state.skillLevel === 'advanced') {
+        // Advanced mode placeholder - currently uses beginner UI
+        updateBeginnerUI();
+    }
+}
+
+// New function for match over state
+function updateMatchOverUI() {
+    // Hide game UI elements
+    document.querySelector('.scoreboard').style.display = 'none';
+    document.getElementById('shot-statistics').style.display = 'none';
+    
+    // Remove rally container if it exists
+    const rallyContainer = document.getElementById('rally-container');
+    if (rallyContainer) {
+        rallyContainer.style.display = 'none';
+    }
+    
+    // Show match end elements
+    document.getElementById('match-status').style.display = 'block';
+    document.getElementById('reset-button').style.display = 'block';
+    document.getElementById('save-button').style.display = 'block';
+}
+
+// New function specifically for beginner mode UI
+function updateBeginnerUI() {
+    // Clear any intermediate mode UI elements
+    const rallyContainer = document.getElementById('rally-container');
+    if (rallyContainer) {
+        rallyContainer.remove();
+    }
+    
+    // Show beginner mode UI elements
+    document.querySelector('.scoreboard').style.display = 'flex';
+    document.getElementById('shot-statistics').style.display = 'flex';
+    document.getElementById('current-set').style.display = 'block';
+    document.querySelector('.button-group').style.display = 'flex';
+    
+    // Hide point-endings and error-types screens
+    document.getElementById('point-endings').style.display = 'none';
+    document.getElementById('error-types').style.display = 'none';
+    
+    // Update statistics display
+    displayStatistics();
+}
+
+// New function specifically for intermediate mode UI
+function updateIntermediateUI() {
+    // Hide all beginner UI elements
+    document.querySelector('.scoreboard').style.display = 'none';
+    document.getElementById('shot-statistics').style.display = 'none';
+    document.getElementById('current-set').style.display = 'none';
+    
+    // Hide all utility button groups except those in rally container
+    const buttonGroups = document.querySelectorAll('.button-group');
+    buttonGroups.forEach(group => {
+        if (!group.classList.contains('utility-container')) {
+            group.style.display = 'none';
         }
-        
-        // Show match end elements
-        document.getElementById('match-status').style.display = 'block';
-        document.getElementById('reset-button').style.display = 'block';
-        document.getElementById('save-button').style.display = 'block';
+    });
+    
+    // Hide point-endings and error-types screens
+    document.getElementById('point-endings').style.display = 'none';
+    document.getElementById('error-types').style.display = 'none';
+    
+    // Show intermediate screen if not already shown
+    if (!document.getElementById('rally-container')) {
+        showIntermediateScreen(state.currentRallyState);
     }
 }
 

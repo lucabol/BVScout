@@ -984,3 +984,61 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
 }
 
 /* Add this at the end of the file to preserve all existing styles */
+
+/* New styles for the compact scoreboard */
+.intermediate-scoreboard.compact {
+    background-color: #2c3e50;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-size: 16px;
+}
+
+.team-display {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.team-display.home {
+    background-color: #27ae60;
+}
+
+.team-display.away {
+    background-color: #c0392b;
+}
+
+.score-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.current-score {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.sets-score {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.serving-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #fff;
+    border-radius: 50%;
+    display: inline-block;
+}

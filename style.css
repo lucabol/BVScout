@@ -724,15 +724,16 @@ button[id$="err1-button"]:hover, button[id$="err2-button"]:hover {
 }
 
 .state-header {
-    font-size: 24px;
+    font-size: 18px; /* Reduced from 24px */
     font-weight: bold;
-    margin: 10px 0;
-    padding: 5px 10px;
-    background-color: #000000;
+    margin: 5px 0; /* Reduced from 10px */
+    padding: 3px 8px; /* Reduced from 5px 10px */
+    background-color: #333333;
     color: #ffffff;
-    border-radius: 5px;
-    width: 80%;
+    border-radius: 3px; /* Reduced from 5px */
+    width: auto; /* Changed from 80% to auto */
     text-align: center;
+    display: inline-block; /* Changed from block to inline-block */
 }
 
 .rally-buttons {

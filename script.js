@@ -688,12 +688,6 @@ function createIntermediateButtons(containerId, stateKey) {
     // Clear existing content
     container.innerHTML = '';
 
-    // Add state header
-    const stateHeader = document.createElement('div');
-    stateHeader.className = 'state-header';
-    stateHeader.textContent = stateKey;
-    container.appendChild(stateHeader);
-
     // Get transitions for current state
     const transitions = rallyGraph[stateKey].transitions || [];
 
@@ -1639,6 +1633,7 @@ function endErrorPoint(errorType) {
             state.team2Scores[state.currentSet]++;
             // Update who is serving - team2 serves next
             state.servingTeam = 'team2';
+            state.servingPlayerNames.reverse();
         }
 
         // Check if set/match is over

@@ -95,35 +95,19 @@ body {
     display: none; /* Hidden by default, shown via JavaScript */
 }
 
-/* Button group styling for uniform sizes */
-.scoreboard button {
-    width: 110px; /* Width that fits "Net Touch" */
-    min-width: 110px;
-}
-
-#point-endings button {
-    width: 110px; /* Width that fits "Attack 2nd" */
-    min-width: 110px;
-}
-
-#error-types button {
-    width: 110px; /* Width that fits "Net Touch" */
-    min-width: 110px;
-}
-
-.rally-button {
-    width: 180px !important; /* Width that fits the longest rally action */
-    min-width: 180px !important;
-}
-
-/* Utility buttons stay compact */
-.utility-button {
-    width: var(--utility-button-width);
-    min-width: var(--utility-button-width);
-}
-
-/* Ensure text stays centered in all buttons */
+/* Global button styling */
 button {
+    height: var(--button-height);
+    margin: var(--button-margin);
+    padding: var(--button-padding);
+    font-size: var(--button-font-size);
+    background-color: var(--button-color-default);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--button-radius);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    /* Ensure text stays centered */
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -131,8 +115,22 @@ button {
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+    box-sizing: border-box;
 }
 
+/* Utility buttons stay compact */
+.utility-button {
+    width: var(--utility-button-width);
+    min-width: var(--utility-button-width);
+    height: var(--utility-button-height);
+    padding: 5px 0px;  /* Removed horizontal padding completely */
+    font-size: var(--button-font-size);
+    margin: 0 -1px;  /* Added negative margin to ensure no gaps */
+    position: relative;  /* Added to ensure buttons stack properly */
+    z-index: 1;  /* Base z-index */
+}
+
+/* Ensure text stays centered in all buttons */
 #match-status {
     font-size: 24px;
     color: #000000;

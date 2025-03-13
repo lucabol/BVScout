@@ -15,6 +15,55 @@ const BUTTON_CONFIG = {
     ]
 };
 
+// Functions to calculate button sizes based on content
+// Function to calculate text width
+function getTextWidth(text) {
+    const canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement('canvas'));
+    const context = canvas.getContext('2d');
+    context.font = '16px Roboto, sans-serif'; // Match the button font
+    const metrics = context.measureText(text);
+    return Math.ceil(metrics.width);
+}
+
+// Function to calculate required button width for a set of labels
+function calculateRequiredButtonWidth(labels) {
+    const padding = 20; // Padding for button content
+    const maxTextWidth = labels.reduce((max, label) => 
+        Math.max(max, getTextWidth(label)), 0);
+    return maxTextWidth + padding * 2; // Add padding for both sides
+}
+
+// Function to update button widths for a container
+function updateButtonWidths(containerId, labels) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const width = calculateRequiredButtonWidth(labels);
+    const buttons = container.querySelectorAll('button');
+    buttons.forEach(button => {
+        button.style.width = `${width}px`;
+        button.style.minWidth = `${width}px`;
+    });
+}
+
+// Function to update scoreboard button widths based on player names
+function updateScoreboardButtonWidths() {
+    const labels = [
+        state.playerNames.home1,
+        state.playerNames.home2,
+        state.playerNames.away1,
+        state.playerNames.away2
+    ];
+    
+    // Update widths for both teams
+    const width = calculateRequiredButtonWidth(labels);
+    const buttons = document.querySelectorAll('.team button');
+    buttons.forEach(button => {
+        button.style.width = `${width}px`;
+        button.style.minWidth = `${width}px`;
+    });
+}
+
 // Graph structure for intermediate level flow
 const rallyGraph = {
     Serve: {
@@ -83,6 +132,10 @@ function createButtons(containerId, buttonConfig) {
 
         container.appendChild(buttonElement);
     });
+
+    // Calculate required width for these buttons
+    const labels = buttonConfig.map(button => button.label);
+    updateButtonWidths(containerId, labels);
 }
 
 // Game state
@@ -375,6 +428,9 @@ function updateButtonNames() {
     document.getElementById('away-err2-button').textContent = state.playerNames.away2;
     document.getElementById('home-err1-button').textContent = state.playerNames.home1;
     document.getElementById('home-err2-button').textContent = state.playerNames.home2;
+
+    // Update widths for all scoreboard buttons
+    updateScoreboardButtonWidths();
 }
 
 function showPlayerNamesModal() {
@@ -982,6 +1038,33 @@ function showIntermediateScreen(screenState) {
     
     // Add utility container to rally container
     rallyContainer.appendChild(utilityContainer);
+
+    // Calculate widths for rally buttons based on all possible transitions
+    const transitions = rallyGraph[screenState].transitions || [];
+    const labels = transitions.map(t => {
+        let actionLabel = t.action;
+        // Apply the same player name replacements as in createIntermediateButtons
+        if (screenState === 'Serve') {
+            if (actionLabel.includes('SkunkReception') || actionLabel.includes('ReceivedBy')) {
+                actionLabel = actionLabel
+                    .replace('Player1', state.receivingPlayerNames[0])
+                    .replace('Player2', state.receivingPlayerNames[1]);
+            } else {
+                actionLabel = actionLabel.replace('Player1', state.servingPlayerNames[0])
+                    .replace('Player2', state.servingPlayerNames[1]);
+            }
+        } else if (screenState === 'Reception') {
+            actionLabel = actionLabel.replace('Player1', state.receivingPlayerNames[0])
+                .replace('Player2', state.receivingPlayerNames[1]);
+        } else if (screenState === 'Attack by Receiving Team' || screenState === 'Attack by Serving Team') {
+            actionLabel = actionLabel.replace('Player1', state.receivingPlayerNames[0])
+                .replace('Player2', state.receivingPlayerNames[1])
+                .replace('Player3', state.servingPlayerNames[0])
+                .replace('Player4', state.servingPlayerNames[1]);
+        }
+        return formatActionLabel(actionLabel);
+    });
+    updateButtonWidths('rally-buttons', labels);
 }
 
 // New function to update the serving indicator
@@ -1139,7 +1222,7 @@ function updateIntermediateUI() {
     document.getElementById('point-endings').style.display = 'none';
     document.getElementById('error-types').style.display = 'none';
     
-    // Show intermediate screen if not already shown
+    // Fix placement of intermediate screen if rally container does not exist
     if (!document.getElementById('rally-container')) {
         showIntermediateScreen(state.currentRallyState);
     }

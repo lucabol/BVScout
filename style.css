@@ -95,30 +95,42 @@ body {
     display: none; /* Hidden by default, shown via JavaScript */
 }
 
-/* Global button styling */
-button {
-    width: var(--button-width);
-    height: var(--button-height);
-    margin: var(--button-margin);
-    padding: var(--button-padding);
-    font-size: var(--button-font-size);
-    background-color: var(--button-color-default);
-    color: #ffffff;
-    border: none;
-    border-radius: var(--button-radius);
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    text-align: center;
-    /* Ensures text stays centered */
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    max-width: 100%; /* Ensure buttons don't overflow */
+/* Button group styling for uniform sizes */
+.scoreboard button {
+    width: 110px; /* Width that fits "Net Touch" */
+    min-width: 110px;
 }
 
-button:hover {
-    background-color: var(--button-color-hover);
+#point-endings button {
+    width: 110px; /* Width that fits "Attack 2nd" */
+    min-width: 110px;
+}
+
+#error-types button {
+    width: 110px; /* Width that fits "Net Touch" */
+    min-width: 110px;
+}
+
+.rally-button {
+    width: 180px !important; /* Width that fits the longest rally action */
+    min-width: 180px !important;
+}
+
+/* Utility buttons stay compact */
+.utility-button {
+    width: var(--utility-button-width);
+    min-width: var(--utility-button-width);
+}
+
+/* Ensure text stays centered in all buttons */
+button {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 #match-status {

@@ -681,7 +681,7 @@ function setupIntermediateMode() {
     }
 }
 
-// Function to create buttons for intermediate mode based on the current state
+// Function to create buttons based on the current state
 function createIntermediateButtons(containerId, stateKey) {
     const container = document.getElementById(containerId);
 
@@ -706,16 +706,16 @@ function createIntermediateButtons(containerId, stateKey) {
         let actionLabel = transition.action;
 
         if (stateKey === 'Serve') {
-            // In Serve state, Player1/2 in reception actions refer to receiving team
-            if (actionLabel.includes('SkunkReception') || actionLabel.includes('ReceivedBy')) {
-                actionLabel = actionLabel
-                    .replace('Player1', state.receivingPlayerNames[0])
-                    .replace('Player2', state.receivingPlayerNames[1]);
-            } else {
-                // For other Serve actions (like Ace), use serving team names
+            // For serve-related actions (Ace, Error), use serving team names
+            if (actionLabel === 'Ace' || actionLabel === 'Error') {
                 actionLabel = actionLabel
                     .replace('Player1', state.servingPlayerNames[0])
                     .replace('Player2', state.servingPlayerNames[1]);
+            } else {
+                // For reception actions (R!, R-, R=, R+), use receiving team names
+                actionLabel = actionLabel
+                    .replace('Player1', state.receivingPlayerNames[0])
+                    .replace('Player2', state.receivingPlayerNames[1]);
             }
         } else if (stateKey === 'Reception') {
             // In Reception state, Player1/2 are the receiving team (they are attacking)
@@ -1841,7 +1841,7 @@ const addTitleAndInfo = () => {
     `;
     infoPane.innerHTML = infoContent;
 
-       infoIcon.addEventListener('click', () => {
+    infoIcon.addEventListener('click', () => {
         infoPane.style.display ='none' ? 'block' : 'none';
     });
 

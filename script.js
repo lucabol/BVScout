@@ -20,11 +20,15 @@ const rallyGraph = {
     Serve: {
         transitions: [
             { action: "Ace", nextState: "Point12" },          // Serving team scores (Point12)
+            { action: "ServeError", nextState: "Point34" },    // Receiving team scores (Point34)
             { action: "SkunkReceptionPlayer1", nextState: "Point12" },  // Serving team scores (Point12)
             { action: "SkunkReceptionPlayer2", nextState: "Point12" },  // Serving team scores (Point12)
-            { action: "ServeError", nextState: "Point34" },    // Receiving team scores (Point34)
-            { action: "ReceivedByPlayer1", nextState: "Reception" },
-            { action: "ReceivedByPlayer2", nextState: "Reception" }
+            { action: "R+ Player1", nextState: "Reception" },   // Perfect reception by Player 1
+            { action: "R= Player1", nextState: "Reception" },   // Average reception by Player 1
+            { action: "R- Player1", nextState: "Reception" },   // Poor reception by Player 1
+            { action: "R+ Player2", nextState: "Reception" },   // Perfect reception by Player 2
+            { action: "R= Player2", nextState: "Reception" },   // Average reception by Player 2
+            { action: "R- Player2", nextState: "Reception" }    // Poor reception by Player 2
         ]
     },
     Reception: {

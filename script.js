@@ -20,15 +20,15 @@ const rallyGraph = {
     Serve: {
         transitions: [
             { action: "Ace", nextState: "Point12" },          // Serving team scores (Point12)
-            { action: "ServeError", nextState: "Point34" },    // Receiving team scores (Point34)
-            { action: "SkunkReceptionPlayer1", nextState: "Point12" },  // Serving team scores (Point12)
-            { action: "SkunkReceptionPlayer2", nextState: "Point12" },  // Serving team scores (Point12)
-            { action: "R+ Player1", nextState: "Reception" },   // Perfect reception by Player 1
-            { action: "R= Player1", nextState: "Reception" },   // Average reception by Player 1
-            { action: "R- Player1", nextState: "Reception" },   // Poor reception by Player 1
-            { action: "R+ Player2", nextState: "Reception" },   // Perfect reception by Player 2
-            { action: "R= Player2", nextState: "Reception" },   // Average reception by Player 2
-            { action: "R- Player2", nextState: "Reception" }    // Poor reception by Player 2
+            { action: "Error", nextState: "Point34" },        // Receiving team scores (Point34)
+            { action: "R! Player1", nextState: "Point12" },   // Bad reception by Player 1
+            { action: "R- Player1", nextState: "Reception" },  // Poor reception by Player 1
+            { action: "R= Player1", nextState: "Reception" },  // Average reception by Player 1
+            { action: "R+ Player1", nextState: "Reception" },  // Perfect reception by Player 1
+            { action: "R! Player2", nextState: "Point12" },   // Bad reception by Player 2
+            { action: "R- Player2", nextState: "Reception" },  // Poor reception by Player 2
+            { action: "R= Player2", nextState: "Reception" },  // Average reception by Player 2
+            { action: "R+ Player2", nextState: "Reception" }   // Perfect reception by Player 2
         ]
     },
     Reception: {
@@ -187,6 +187,7 @@ function incrementScore(team, method) {
         scoringTeam = 'team1';
     } else if (team === 'away1' || team === 'away2') {
         state.team2Scores[state.currentSet]++;
+
         scoringTeam = 'team2';
 
     }
@@ -1100,6 +1101,7 @@ function updateBeginnerUI() {
     // Show beginner mode UI elements
     document.querySelector('.scoreboard').style.display = 'flex';
     document.getElementById('shot-statistics').style.display = 'flex';
+    document.getElementById('shot-statistics').style.display = 'flex';
     document.getElementById('current-set').style.display = 'block';
     document.querySelector('.button-group').style.display = 'flex';
     
@@ -1756,8 +1758,8 @@ const addTitleAndInfo = () => {
     `;
     infoPane.innerHTML = infoContent;
 
-    infoIcon.addEventListener('click', () => {
-        infoPane.style.display = infoPane.style.display === 'none' ? 'block' : 'none';
+       infoIcon.addEventListener('click', () => {
+        infoPane.style.display ='none' ? 'block' : 'none';
     });
 
     titleContainer.appendChild(title);

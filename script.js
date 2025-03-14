@@ -82,8 +82,8 @@ const rallyGraph = {
     },
     Reception: {
         transitions: [
-            { action: "AttackPlayer1", nextState: "Attack by Receiving Team" },
-            { action: "AttackPlayer2", nextState: "Attack by Receiving Team" }
+            { action: "AttackPlayer1", nextState: "Trajectory of Attack" },
+            { action: "AttackPlayer2", nextState: "Trajectory of Attack" }
         ]
     },
     "Attack by Receiving Team": {
@@ -98,8 +98,8 @@ const rallyGraph = {
     },
     "Defense By Serving Team": {
         transitions: [
-            { action: `AttackServingPlayer1`, nextState: "Attack by Serving Team" },
-            { action: `AttackServingPlayer2`, nextState: "Attack by Serving Team" }
+            { action: `AttackServingPlayer1`, nextState: "Trajectory of Attack" },
+            { action: `AttackServingPlayer2`, nextState: "Trajectory of Attack" }
         ]
     },
     "Attack by Serving Team": {
@@ -114,11 +114,41 @@ const rallyGraph = {
     },
     "Defense By Receiving Team": {
         transitions: [
-            { action: `AttackReceivingPlayer1`, nextState: "Attack by Receiving Team" },
-            { action: `AttackReceivingPlayer2`, nextState: "Attack by Receiving Team" }
+            { action: `AttackReceivingPlayer1`, nextState: "Trajectory of Attack" },
+            { action: `AttackReceivingPlayer2`, nextState: "Trajectory of Attack" }
         ]
     }
 };
+
+// Add new state "Trajectory of Attack"
+rallyGraph["Trajectory of Attack"] = {
+    transitions: [
+        { action: "V1", nextState: "Attack by Receiving Team" },
+        { action: "V2", nextState: "Attack by Receiving Team" },
+        { action: "V3", nextState: "Attack by Receiving Team" },
+        { action: "V4", nextState: "Attack by Receiving Team" },
+        { action: "V5", nextState: "Attack by Receiving Team" },
+        { action: "X1", nextState: "Attack by Receiving Team" },
+        { action: "X2", nextState: "Attack by Receiving Team" },
+        { action: "X3", nextState: "Attack by Receiving Team" },
+        { action: "X4", nextState: "Attack by Receiving Team" },
+        { action: "X5", nextState: "Attack by Receiving Team" },
+        { action: "I1", nextState: "Attack by Receiving Team" },
+        { action: "I2", nextState: "Attack by Receiving Team" },
+        { action: "I3", nextState: "Attack by Receiving Team" },
+        { action: "I4", nextState: "Attack by Receiving Team" },
+        { action: "I5", nextState: "Attack by Receiving Team" }
+    ],
+    gridLayout: { rows: 5, columns: 3, compact: true } // Add this property to indicate desired layout
+};
+
+// Update existing states to transition to "Trajectory of Attack"
+const statesToUpdate = ['Reception', 'Defense By Serving Team', 'Defense By Receiving Team'];
+statesToUpdate.forEach(stateName => {
+    rallyGraph[stateName].transitions.forEach(transition => {
+        transition.nextState = "Trajectory of Attack";
+    });
+});
 
 // Function to create buttons from configuration
 function createButtons(containerId, buttonConfig) {
@@ -696,51 +726,27 @@ function setupIntermediateMode() {
 // Function to create buttons based on the current state
 function createIntermediateButtons(containerId, stateKey) {
     const container = document.getElementById(containerId);
-
-    // Clear existing content
     container.innerHTML = '';
 
-    // Get transitions for current state
     const transitions = rallyGraph[stateKey].transitions || [];
+    const gridLayout = rallyGraph[stateKey].gridLayout;
 
-    // Create buttons for each transition
+    if (gridLayout && gridLayout.compact) {
+        container.style.display = 'grid';
+        container.style.gridTemplateRows = `repeat(${gridLayout.rows}, auto)`;
+        container.style.gridTemplateColumns = `repeat(${gridLayout.columns}, auto)`;
+        container.style.gap = '4px'; // small gap for compactness
+    } else {
+        container.style.display = '';
+        container.style.gridTemplateRows = '';
+        container.style.gridTemplateColumns = '';
+        container.style.gap = '';
+    }
+
     transitions.forEach(transition => {
         const buttonElement = document.createElement('button');
-        buttonElement.className = 'rally-button';
-
-        // Replace generic player labels with actual names
-        let actionLabel = transition.action;
-
-        if (stateKey === 'Serve') {
-            // For serve-related actions (Ace, Error), use serving team names
-            if (actionLabel === 'Ace' || actionLabel === 'Error') {
-                actionLabel = actionLabel
-                    .replace('Player1', state.servingPlayerNames[0])
-                    .replace('Player2', state.servingPlayerNames[1]);
-            } else {
-                // For reception actions (R!, R-, R=, R+), use receiving team names
-                actionLabel = actionLabel
-                    .replace('Player1', state.receivingPlayerNames[0])
-                    .replace('Player2', state.receivingPlayerNames[1]);
-            }
-        } else if (stateKey === 'Reception') {
-            // In Reception state, Player1/2 are the receiving team (they are attacking)
-            actionLabel = actionLabel
-                .replace('Player1', state.receivingPlayerNames[0])
-                .replace('Player2', state.receivingPlayerNames[1]);
-        } else if (stateKey === 'Attack by Receiving Team' || stateKey === 'Attack by Serving Team') {
-            // Replace all player references with actual names
-            actionLabel = actionLabel
-                .replace('Player1', state.receivingPlayerNames[0])
-                .replace('Player2', state.receivingPlayerNames[1])
-                .replace('Player3', state.servingPlayerNames[0])
-                .replace('Player4', state.servingPlayerNames[1]);
-        }
-
-        // Format the action label into a proper phrase with spaces
-        actionLabel = formatActionLabel(actionLabel);
-
-        buttonElement.textContent = actionLabel;
+        buttonElement.className = 'rally-button small-button'; // add small-button class for compactness
+        buttonElement.textContent = transition.action;
         buttonElement.addEventListener('click', () => handleRallyTransition(transition));
         container.appendChild(buttonElement);
     });
@@ -1222,15 +1228,6 @@ function updateIntermediateUI() {
     document.getElementById('set-results').style.display = 'none'; // Hide set results
     
     // Hide all utility button groups except those in rally container
-    const buttonGroups = document.querySelectorAll('.button-group');
-    buttonGroups.forEach(group => {
-        if (!group.classList.contains('utility-container')) {
-            group.style.display = 'none';
-        }
-    });
-    
-    // Hide point-endings and error-types screens
-    document.getElementById('point-endings').style.display = 'none';
     document.getElementById('error-types').style.display = 'none';
     
     // Fix placement of intermediate screen if rally container does not exist
@@ -1261,8 +1258,11 @@ function updateMatchStatus() {
 }
 
 function displayStatistics() {
-    const shotTypes = ['attack', 'attack2', 'block', 'ace', 
+    const shotTypes = ['attack', 'attack2', 'block', 'ace',    
                       'errorServe', 'errorRecept', 'errorAttack', 'errorDouble', 'errorNetTouch'];
+    // Hide point-endings and error-types screens
+    document.getElementById('point-endings').style.display = 'none';
+    document.getElementById('error-types').style.display = 'none';
     
     // Create main container for all stats tables
     let allStatsHtml = '';
@@ -1317,7 +1317,7 @@ function generateStatsFromShots(shots, shotTypes) {
     // Create team totals
     const homeStats = {};
     const awayStats = {};
-
+    
     // Calculate team totals for each shot type
     shotTypes.forEach(method => {
         homeStats[method] = (stats['home1'] ? stats['home1'][method] || 0 : 0) + 
@@ -1326,7 +1326,7 @@ function generateStatsFromShots(shots, shotTypes) {
         awayStats[method] = (stats['away1'] ? stats['away1'][method] || 0 : 0) + 
                           (stats['away2'] ? stats['away2'][method] || 0 : 0);
     });
-    
+       
     return {
         stats,
         homeStats,
@@ -1334,12 +1334,11 @@ function generateStatsFromShots(shots, shotTypes) {
     };
 }
 
-//	Helper function to generate a statistics table from stats data
+// Helper function to generate a statistics table from stats data
 function generateStatsTable(statsData, shotTypes) {
     // Get 4-letter abbreviations of player names
     const abbrevName = name => name.substring(0, 4);
     
-    // Extract data
     const { stats, homeStats, awayStats } = statsData;
     
     // Calculate column totals for percentages
@@ -1454,10 +1453,10 @@ function loadMatch(event) {
         reader.onload = (e) => {
             try {
                 const matchData = JSON.parse(e.target.result);
-
+                
                 // Store current skill level before overwriting
                 const currentSkillLevel = state.skillLevel;
-
+                
                 // Load all properties from saved state
                 Object.assign(state, matchData);
 
@@ -1497,10 +1496,10 @@ function loadMatch(event) {
 
                 // Apply skill level settings to ensure the correct UI is shown
                 applySkillLevelSettings();
-
+                
                 // Update UI based on loaded state
                 updateUI();
-
+                
                 // Save the state to localStorage to ensure persistence
                 saveState();
 
@@ -1609,7 +1608,6 @@ function endErrorPoint(errorType) {
         // Determine which team made the error and attribute the error statistic to them
         let errorTeam;
         let scoringTeam;
-        
         // Map error button IDs to actual player IDs for statistics
         if (state.errorPlayer === 'home-err1') {
             errorTeam = 'home1';
@@ -1624,7 +1622,7 @@ function endErrorPoint(errorType) {
             errorTeam = 'away2';
             scoringTeam = 'home2';
         }
-
+        
         // Find the method name from the errorType and button configuration
         const errorButton = BUTTON_CONFIG.errorTypes.find(btn => 
             btn.label === errorType || 
@@ -1676,7 +1674,7 @@ function endErrorPoint(errorType) {
         // Reset state and update UI
         state.errorMode = false;
         state.errorPlayer = null;
-        
+
         saveState();
         updateUI();
         
@@ -1759,7 +1757,7 @@ function undoLastAction() {
     
     // Get the previous state
     const previousState = state.history.pop();
-    
+
     // Restore previous values
     state.team1Scores = previousState.team1Scores;
     state.team2Scores = previousState.team2Scores;
@@ -1777,7 +1775,7 @@ function undoLastAction() {
     // Save the new state (with one less history item) to localStorage
     saveState();
 
-    // Ifwe're in intermediate mode, update the UI accordingly
+    // If we're in intermediate mode, update the UI accordingly to history
     if (state.skillLevel === 'intermediate') {
         // Update player name arrays
         setupIntermediateMode();
@@ -1854,7 +1852,7 @@ const addTitleAndInfo = () => {
     infoPane.innerHTML = infoContent;
 
     infoIcon.addEventListener('click', () => {
-        infoPane.style.display ='none' ? 'block' : 'none';
+        infoPane.style.display = infoPane.style.display === 'none' ? 'block' : 'none';
     });
 
     titleContainer.appendChild(title);
@@ -1890,7 +1888,7 @@ window.onload = () => {
     
     // Set reset button text
     document.getElementById('reset-button').innerText = 'Reset';
-    
+
     // Event listeners for team buttons
     document.getElementById('home-one-button').addEventListener('click', () => chooseTeam('home1'));
     document.getElementById('home-two-button').addEventListener('click', () => chooseTeam('home2'));

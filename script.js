@@ -92,8 +92,14 @@ const rallyGraph = {
             { action: "BlockPlayer3", nextState: "Point12" },   // Serving team scores (Point12)
             { action: "BlockPlayer4", nextState: "Point12" },   // Serving team scores (Point12)
             { action: "AttackError", nextState: "Point12" },    // Serving team scores (Point12)
-            { action: "DefByPlayer3", nextState: "Attack by Serving Team" },
-            { action: "DefByPlayer4", nextState: "Attack by Serving Team" }
+            { action: "DefByPlayer3", nextState: "Defense By Serving Team" },
+            { action: "DefByPlayer4", nextState: "Defense By Serving Team" }
+        ]
+    },
+    "Defense By Serving Team": {
+        transitions: [
+            { action: `AttackServingPlayer1`, nextState: "Attack by Serving Team" },
+            { action: `AttackServingPlayer2`, nextState: "Attack by Serving Team" }
         ]
     },
     "Attack by Serving Team": {
@@ -102,8 +108,14 @@ const rallyGraph = {
             { action: "BlockPlayer1", nextState: "Point34" },   // Receiving team scores (Point34)
             { action: "BlockPlayer2", nextState: "Point34" },   // Receiving team scores (Point34)
             { action: "AttackError", nextState: "Point34" },    // Receiving team scores (Point34)
-            { action: "DefByPlayer1", nextState: "Attack by Receiving Team" },
-            { action: "DefByPlayer2", nextState: "Attack by Receiving Team" }
+            { action: "DefByPlayer1", nextState: "Defense By Receiving Team" },
+            { action: "DefByPlayer2", nextState: "Defense By Receiving Team" }
+        ]
+    },
+    "Defense By Receiving Team": {
+        transitions: [
+            { action: `AttackReceivingPlayer1`, nextState: "Attack by Receiving Team" },
+            { action: `AttackReceivingPlayer2`, nextState: "Attack by Receiving Team" }
         ]
     }
 };
@@ -743,21 +755,26 @@ function formatActionLabel(actionLabel) {
     if (actionLabel.includes('ReceivedBy')) {
         return actionLabel.replace('ReceivedBy', 'Received by ');
     }
-    if (actionLabel.includes('AttackPlayer')) {
-        return actionLabel.replace('AttackPlayer', 'Attack by ');
+    if (actionLabel.includes('AttackServingPlayer')) {
+        const playerNum = actionLabel.slice(-1);
+        return `Attack by ${state.servingPlayerNames[playerNum - 1]}`;
+    }
+    if (actionLabel.includes('AttackReceivingPlayer')) {
+        const playerNum = actionLabel.slice(-1);
+        return `Attack by ${state.receivingPlayerNames[playerNum - 1]}`;
     }
     if (actionLabel === 'WinningAttack') {
         return 'Winning Attack';
     }
     if (actionLabel.includes('Attack') && !actionLabel.includes('Error')) {
-        // Handle any other Attack patterns (like AttackHome1, AttackAway1, etc)
+        // Handle any other Attack patterns
         return actionLabel.replace(/Attack(.+)/, 'Attack by $1');
     }
     if (actionLabel.includes('BlockPlayer')) {
         return actionLabel.replace('BlockPlayer', 'Block by ');
     }
     if (actionLabel.includes('Block') && !actionLabel.includes('Player')) {
-        // Handle any other Block patterns (like BlockHome1, BlockAway1, etc)
+        // Handle any other Block patterns
         return actionLabel.replace(/Block(.+)/, 'Block by $1');
     }
     if (actionLabel.includes('DefBy')) {
@@ -1760,7 +1777,7 @@ function undoLastAction() {
     // Save the new state (with one less history item) to localStorage
     saveState();
 
-    // If we're in intermediate mode, update the UI accordingly
+    // Ifwe're in intermediate mode, update the UI accordingly
     if (state.skillLevel === 'intermediate') {
         // Update player name arrays
         setupIntermediateMode();
